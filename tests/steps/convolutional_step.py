@@ -49,21 +49,6 @@ class ConvolutionalStepTests(unittest.TestCase):
         self.assertTrue(expected_output.size, output.size)
         self.assertTrue(all(np.equal(expected_output.reshape(expected_output.size), output.reshape(output.size))))
 
-    def test_one_feature_size_of_1d_input_without_padding_one_filter_stride_with_residue(self):
-        # arrange
-        input = np.array([1, 2, 3, 4])
-        expected_output = np.array([[[6, 7]]])
-        step = ConvolutionalStep(filter_size=3, stride=2, num_of_filters=1, x0='ones')
-
-        # act
-        output = step.forward_propagation(input)
-
-        # assert
-        self.assertEqual(1, len(step.features))
-        self.assertTrue(all([f.shape == (1, 1, 2) for f in step.features]))
-        self.assertTrue(expected_output.size, output.size)
-        self.assertTrue(all(np.equal(expected_output.reshape(expected_output.size), output.reshape(output.size))))
-
     def test_one_feature_size_of_1d_input_without_padding_two_filters(self):
         # arrange
         input = np.array([1, 2, 3, 4])
@@ -136,7 +121,7 @@ class ConvolutionalStepTests(unittest.TestCase):
         ])
         expected = np.array([
             [2, 7, 12, 7],
-            [3, 13, 22, 13],
+            [3, 12, 22, 13],
             [1, 5, 10, 6]
         ])
 
@@ -151,4 +136,64 @@ class ConvolutionalStepTests(unittest.TestCase):
         self.assertTrue(expected.size, output.size)
         self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))
 
+    def test_one_feature_3d_input_no_padding(self):
+        # arrange
+        input = np.array([
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ],
+            [
+                [11, 12, 13],
+                [14, 15, 16],
+                [17, 18, 19]
+            ]
+        ])
+        expected = np.array([
+            [64, 72],
+            [88, 96]
+        ])
 
+        step = ConvolutionalStep(filter_size=2, num_of_filters=1, x0='ones')
+
+        # arrange
+        output = step.forward_propagation(input)
+
+        # assert
+        self.assertEqual(1, len(step.features))
+        self.assertTrue(all([f.shape == (2, 2, 2) for f in step.features]))
+        self.assertTrue(expected.size, output.size)
+        self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))
+
+    def test_one_feature_3d_input_with_1_padding(self):
+        # arrange
+        input = np.array([
+            [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ],
+            [
+                [11, 12, 13],
+                [14, 15, 16],
+                [17, 18, 19]
+            ]
+        ])
+        expected = np.array([
+            [12, 26, 30, 16],
+            [30, 64, 72, 38],
+            [42, 88, 96, 50],
+            [24, 50, 54, 28]
+        ])
+
+        step = ConvolutionalStep(filter_size=2, num_of_filters=1, x0='ones', padding=1)
+
+        # arrange
+        output = step.forward_propagation(input)
+
+        # assert
+        self.assertEqual(1, len(step.features))
+        self.assertTrue(all([f.shape == (2, 2, 2) for f in step.features]))
+        self.assertTrue(expected.size, output.size)
+        self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))

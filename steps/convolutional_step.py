@@ -10,6 +10,8 @@ class ConvolutionalStep(BasicStep):
     '''
 
     def __init__(self, filter_size, num_of_filters, x0='random', padding=None, stride=1):
+        super().__init__()
+
         self.num_of_filters = num_of_filters
         self.filter_size = filter_size
         self.x0 = x0
@@ -19,13 +21,14 @@ class ConvolutionalStep(BasicStep):
         self.stride = stride
 
     def forward_propagation(self, input):
+        # TODO: this is not the convolution job. its the CNN network it self
         input_3d_array = self.__to_3d_shape(self.__add_padding(input))
 
         if self.features is None:
             self.features = self.__initiliaze_features(input_3d_array.shape)
 
-        # TODO: save output. understand how do I pile features as my depth of the matrix
-        bulks = self.__get_sub_arrays(input_3d_array)
+        feature_height, feature_widht = self.features[0].shape[1], self.features[0].shape[2]
+        bulks = self._get_sub_arrays(input_3d_array, self.stride, (feature_height, feature_widht))
         features_sum_of_products = []
 
         for feature in self.features:
@@ -35,8 +38,10 @@ class ConvolutionalStep(BasicStep):
         return np.stack(features_sum_of_products, axis=0)
 
     def __add_padding(self, input):
-        # if self.padding:
-        padding_size = [(self.padding, self.padding)] * len(input.shape)
+        if self.padding is None:
+            return input
+
+        padding_size = [(0,0)] + [(self.padding, self.padding)] * 2
         return np.lib.pad(input, padding_size, 'constant')
 
         # return input
@@ -45,33 +50,20 @@ class ConvolutionalStep(BasicStep):
         multiplied = feature * bulk
         return np.sum(np.reshape(multiplied, multiplied.size))
 
-    def __get_sub_arrays(self, input):
-        input_height, input_width = input.shape[1], input.shape[2]
-        feature_height, feature_widht = self.features[0].shape[1], self.features[0].shape[2]
-        bulks = []
-
-        for i in range(0, input_height, self.stride):
-            row = []
-            if i + feature_height > input_height:
-                continue
-
-            for j in range(0, input_width, self.stride):
-                if j + feature_widht > input_width:
-                    continue
-                # bulk = input[:, i: input_width, j: j + feature_widht]
-                # else:
-                bulk = input[:, i: i + feature_height, j: j + feature_widht]
-                row.append(bulk)
-
-            bulks.append(row)
-
-        return bulks
-
     def __initiliaze_features(self, input_shape):
-        feature_size = (input_shape[0],) + (
-            self.filter_size if isinstance(self.filter_size, tuple) else (1, self.filter_size))
+        feature_size = (input_shape[0],)
+
+        if isinstance(self.filter_size, tuple):
+            filter_height = self.filter_size[0]
+            filter_width = self.filter_size[1]
+        else:
+            filter_height = filter_width = self.filter_size
+
+        feature_size += (min(filter_height, input_shape[1]), filter_width)
+
         # TODO: not use only ones - use what ever X0 is assign for
         return [np.ones(feature_size) for i in range(self.num_of_filters)]
+
 
     def __to_3d_shape(self, input):
         return np.reshape(input, (1,) * (3 - len(input.shape)) + input.shape)

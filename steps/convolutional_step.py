@@ -6,18 +6,20 @@ class ConvolutionalStep(BasicStep):
     '''
     feature_size: tuple (height widht) or (width) for 1 dimentianl array
     x0: initiale features values (random, ones, zeros)
+    padding: number for equels
     '''
 
-    def __init__(self, filter_size, num_of_filters, x0='random', padding=2, stride=1):
+    def __init__(self, filter_size, num_of_filters, x0='random', padding=None, stride=1):
         self.num_of_filters = num_of_filters
         self.filter_size = filter_size
         self.x0 = x0
         self.features = None
+        self.padding = padding
 
         self.stride = stride
 
     def forward_propagation(self, input):
-        input_3d_array = self.__to_3d_shape(input)
+        input_3d_array = self.__to_3d_shape(self.__add_padding(input))
 
         if self.features is None:
             self.features = self.__initiliaze_features(input_3d_array.shape)
@@ -31,6 +33,13 @@ class ConvolutionalStep(BasicStep):
                 [[self.__get_bulk_sum_of_products(bulk, feature) for bulk in row] for row in bulks])
 
         return np.stack(features_sum_of_products, axis=0)
+
+    def __add_padding(self, input):
+        # if self.padding:
+        padding_size = [(self.padding, self.padding)] * len(input.shape)
+        return np.lib.pad(input, padding_size, 'constant')
+
+        # return input
 
     def __get_bulk_sum_of_products(self, bulk, feature):
         multiplied = feature * bulk
@@ -49,12 +58,9 @@ class ConvolutionalStep(BasicStep):
             for j in range(0, input_width, self.stride):
                 if j + feature_widht > input_width:
                     continue
-
-                # if feature_height == 0:
-                bulk = input[:, i: i + feature_height, j: j + feature_widht]
+                # bulk = input[:, i: input_width, j: j + feature_widht]
                 # else:
-                #     bulk = input[:, (i, i + feature_height, 1), (j, j + feature_widht, 1)]
-
+                bulk = input[:, i: i + feature_height, j: j + feature_widht]
                 row.append(bulk)
 
             bulks.append(row)

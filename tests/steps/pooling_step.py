@@ -39,3 +39,26 @@ class PoolingActivationTests(unittest.TestCase):
         # assert
         self.assertEqual(expected.shape, output.shape)
         self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))
+
+    def test_max_pooling_3d_array(self):
+        input = np.array([
+            [
+                [1, 2, 3],
+                [4, 3, 2, ],
+                [7, -4, 7],
+            ],
+            [
+                [0, -23, 100],
+                [2, 5, 6],
+                [-23.9, 4, 20.7]
+            ]
+        ])
+        expected = np.array([[[7]],[[100]]])
+        pooling = MaxPooling(3)
+
+        # act
+        output = pooling.forward_propagation(input)
+
+        # assert
+        self.assertEqual(expected.shape, output.shape)
+        self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))

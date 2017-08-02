@@ -28,7 +28,7 @@ class ConvolutionalStep(BasicStep):
             self.features = self.__initiliaze_features(input_3d_array.shape)
 
         feature_height, feature_widht = self.features[0].shape[1], self.features[0].shape[2]
-        bulks = self._get_sub_arrays(input_3d_array, self.stride, (feature_height, feature_widht))
+        bulks = self.__get_sub_arrays(input_3d_array, self.stride, (feature_height, feature_widht))
         features_sum_of_products = []
 
         for feature in self.features:
@@ -64,6 +64,30 @@ class ConvolutionalStep(BasicStep):
         # TODO: not use only ones - use what ever X0 is assign for
         return [np.ones(feature_size) for i in range(self.num_of_filters)]
 
+    def __get_sub_arrays(self, input, stride, size):
+        input_height, input_width = input.shape[1], input.shape[2]
+        size_height = size[0]
+        size_width = size[1]
+
+        bulks = []
+
+        for i in range(0, input_height, stride):
+            row = []
+            if i + size_height > input_height:
+                continue
+
+            for j in range(0, input_width, stride):
+                if j + size_width > input_width:
+                    continue
+
+                # bulk = input[:, i: input_width, j: j + feature_widht]
+                # else:
+                bulk = input[:, i: i + size_height, j: j + size_width]
+                row.append(bulk)
+
+            bulks.append(row)
+
+        return bulks
 
     def __to_3d_shape(self, input):
         return np.reshape(input, (1,) * (3 - len(input.shape)) + input.shape)

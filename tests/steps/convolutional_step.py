@@ -115,10 +115,10 @@ class ConvolutionalStepTests(unittest.TestCase):
 
     def test_one_feature_2d_input_with_padding(self):
         # arrange
-        input = np.array([
+        input = np.array([[
             [2, 5, 7],
             [1, 4, 6],
-        ])
+        ]])
         expected = np.array([
             [2, 7, 12, 7],
             [3, 12, 22, 13],

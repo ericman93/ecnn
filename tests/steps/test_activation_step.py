@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-from steps.activation_step import ReluActivation
+
+from cnn.steps import ReluActivation
 
 
 class ReluActivationTests(unittest.TestCase):

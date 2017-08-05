@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-from steps.pooling_step import MaxPooling
+
+from cnn.steps import MaxPooling
 
 
 class PoolingActivationTests(unittest.TestCase):

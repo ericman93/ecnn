@@ -1,6 +1,8 @@
 import unittest
+
 import numpy as np
-from steps.convolutional_step import ConvolutionalStep
+
+from cnn.steps import ConvolutionalStep
 
 
 class ConvolutionalStepTests(unittest.TestCase):

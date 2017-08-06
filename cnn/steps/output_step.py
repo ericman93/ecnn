@@ -1,9 +1,12 @@
 import numpy as np
 from cnn.steps.basic import BasicStep
+from cnn.common import get_array
 
 
-class ClassificationOutputStep(BasicStep):
+class OutputStep(BasicStep):
     def __init__(self, x0='random'):
+        self.x0 = x0
+
         self.weights = None
         self.classes = None
 
@@ -22,4 +25,4 @@ class ClassificationOutputStep(BasicStep):
 
     def __initiliaze_weights(self, flatten_input):
         # TODO: not use only ones - use what ever X0 is assign for
-        return np.array([np.ones(flatten_input.size) for c in self.classes])
+        return np.array([get_array(self.x0, flatten_input.size) for c in self.classes])

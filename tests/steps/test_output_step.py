@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from cnn.steps.output_step import ClassificationOutputStep
+from cnn.steps.output_step import OutputStep
 
 
 class OutputStepTests(unittest.TestCase):
@@ -9,9 +9,9 @@ class OutputStepTests(unittest.TestCase):
         X = [1, 0, 1, 1, 2]
         y = [0, 1, 2, 1, 0]
         input = np.array([[[1, 2, 3, 4]]])
-        expected_weights = np.ones((3, 4))
+        expected_weights = np.ones((3, 5))
 
-        step = ClassificationOutputStep(x0='ones')
+        step = OutputStep(x0='ones')
 
         # act
         step.prepare(X, y)
@@ -26,7 +26,7 @@ class OutputStepTests(unittest.TestCase):
         # arrange
         input = np.array([[[1, 2, 3, 4]]])
 
-        step = ClassificationOutputStep(x0='ones')
+        step = OutputStep(x0='ones')
         step.prepare([], [0, 1, 2, 3])
         expected_weights = np.ones((4, 5))
 
@@ -43,7 +43,7 @@ class OutputStepTests(unittest.TestCase):
             [2, 3, 4],
             [6, 4, 3]
         ]])
-        step = ClassificationOutputStep(x0='ones')
+        step = OutputStep(x0='ones')
         step.prepare([], [0, 1, 2])
         expected_weights = np.ones((3, 7))
 
@@ -66,7 +66,7 @@ class OutputStepTests(unittest.TestCase):
                 [7, 8]
             ]
         ])
-        step = ClassificationOutputStep(x0='ones')
+        step = OutputStep(x0='ones')
         step.prepare([], [0, 1])
         expected_weights = np.ones((2, 9))
 
@@ -89,7 +89,7 @@ class OutputStepTests(unittest.TestCase):
                 [7, 8]
             ]
         ])
-        step = ClassificationOutputStep(x0='ones')
+        step = OutputStep(x0='ones')
         step.weights = [
             np.array([1, 1, 2, 3, 4, 5, 6, 7, 8]),
             np.array([1, 1, 1, 1, 1, 1, 1, 1, 1])

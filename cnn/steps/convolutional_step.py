@@ -1,4 +1,5 @@
 import numpy as np
+from cnn.common import get_array
 from cnn.steps.basic import BasicStep
 
 
@@ -20,15 +21,14 @@ class ConvolutionalStep(BasicStep):
 
         self.stride = stride
 
-    def prepare(self, input):
-        self.features = self.__initiliaze_features(input.shape)
-
     def forward_propagation(self, input):
-        # TODO: this is not the convolution job. its the CNN network it self
-        input_3d_array = self.__to_3d_shape(self.__add_padding(input))
+        if self.features is None:
+            self.features = self.__initiliaze_features(input.shape)
+
+        input = self.__add_padding(input)
 
         feature_height, feature_widht = self.features[0].shape[1], self.features[0].shape[2]
-        bulks = self.__get_sub_arrays(input_3d_array, self.stride, (feature_height, feature_widht))
+        bulks = self.__get_sub_arrays(input, self.stride, (feature_height, feature_widht))
         features_sum_of_products = []
 
         for feature in self.features:
@@ -41,7 +41,7 @@ class ConvolutionalStep(BasicStep):
         if self.padding is None:
             return input
 
-        padding_size = [(0,0)] + [(self.padding, self.padding)] * 2
+        padding_size = [(0, 0)] + [(self.padding, self.padding)] * 2
         return np.lib.pad(input, padding_size, 'constant')
 
         # return input
@@ -61,8 +61,7 @@ class ConvolutionalStep(BasicStep):
 
         feature_size += (min(filter_height, input_shape[1]), filter_width)
 
-        # TODO: not use only ones - use what ever X0 is assign for
-        return [np.ones(feature_size) for i in range(self.num_of_filters)]
+        return [get_array(self.x0, feature_size) for i in range(self.num_of_filters)]
 
     def __get_sub_arrays(self, input, stride, size):
         input_height, input_width = input.shape[1], input.shape[2]
@@ -88,6 +87,3 @@ class ConvolutionalStep(BasicStep):
             bulks.append(row)
 
         return bulks
-
-    def __to_3d_shape(self, input):
-        return np.reshape(input, (1,) * (3 - len(input.shape)) + input.shape)

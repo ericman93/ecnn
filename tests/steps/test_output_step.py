@@ -28,7 +28,7 @@ class OutputStepTests(unittest.TestCase):
 
         step = ClassificationOutputStep(x0='ones')
         step.prepare([], [0, 1, 2, 3])
-        expected_weights = np.ones((4,4))
+        expected_weights = np.ones((4, 5))
 
         # act
         step.forward_propagation(input)
@@ -45,7 +45,7 @@ class OutputStepTests(unittest.TestCase):
         ]])
         step = ClassificationOutputStep(x0='ones')
         step.prepare([], [0, 1, 2])
-        expected_weights = np.ones((3,6))
+        expected_weights = np.ones((3, 7))
 
         # act
         step.forward_propagation(input)
@@ -68,7 +68,7 @@ class OutputStepTests(unittest.TestCase):
         ])
         step = ClassificationOutputStep(x0='ones')
         step.prepare([], [0, 1])
-        expected_weights = np.ones((2,8))
+        expected_weights = np.ones((2, 9))
 
         # act
         step.forward_propagation(input)
@@ -91,10 +91,10 @@ class OutputStepTests(unittest.TestCase):
         ])
         step = ClassificationOutputStep(x0='ones')
         step.weights = [
-            np.array([1, 2, 3, 4, 5, 6, 7, 8]),
-            np.array([1, 1, 1, 1, 1, 1, 1, 1])
+            np.array([1, 1, 2, 3, 4, 5, 6, 7, 8]),
+            np.array([1, 1, 1, 1, 1, 1, 1, 1, 1])
         ]
-        exptected_output = [204, 36]
+        exptected_output = [205, 37]
 
         # act
         output = step.forward_propagation(input)

@@ -12,6 +12,9 @@ class ClassificationOutputStep(BasicStep):
 
     def forward_propagation(self, input):
         flatten_input = input.reshape(input.size)
+        # bias
+        flatten_input = np.append([1], flatten_input)
+
         if self.weights is None:
             self.weights = self.__initiliaze_weights(flatten_input)
 

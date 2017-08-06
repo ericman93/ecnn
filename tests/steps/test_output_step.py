@@ -94,10 +94,13 @@ class OutputStepTests(unittest.TestCase):
             np.array([1, 1, 2, 3, 4, 5, 6, 7, 8]),
             np.array([1, 1, 1, 1, 1, 1, 1, 1, 1])
         ]
-        exptected_output = [205, 37]
+        exptected_output = np.array([205, 37])
 
         # act
         output = step.forward_propagation(input)
 
         # assert
-        a = 2
+        self.assertEqual(exptected_output.shape, output.shape)
+        self.assertTrue(
+            all(np.equal(exptected_output.reshape(output.size), output.reshape(output.size))))
+

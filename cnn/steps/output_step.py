@@ -18,7 +18,7 @@ class ClassificationOutputStep(BasicStep):
         if self.weights is None:
             self.weights = self.__initiliaze_weights(flatten_input)
 
-        return [flatten_input.dot(neuron_weights.T) for neuron_weights in self.weights]
+        return np.array([flatten_input.dot(neuron_weights.T) for neuron_weights in self.weights])
 
     def __initiliaze_weights(self, flatten_input):
         # TODO: not use only ones - use what ever X0 is assign for

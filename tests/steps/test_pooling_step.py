@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from cnn.steps import MaxPooling
+from cnn.steps import MaxPoolingStep
 
 
 class PoolingActivationTests(unittest.TestCase):
@@ -8,7 +8,7 @@ class PoolingActivationTests(unittest.TestCase):
         # arrange
         input = np.array([[[1, 2, -3, 4]]])
         expected = np.array([[[2, 4]]])
-        pooling = MaxPooling(2)
+        pooling = MaxPoolingStep(2)
 
         # act
         output = pooling.forward_propagation(input)
@@ -31,7 +31,7 @@ class PoolingActivationTests(unittest.TestCase):
             [23, 59, 2],
             [2, 7, 6]
         ]])
-        pooling = MaxPooling(2)
+        pooling = MaxPoolingStep(2)
 
         # act
         output = pooling.forward_propagation(input)
@@ -54,7 +54,7 @@ class PoolingActivationTests(unittest.TestCase):
             ]
         ])
         expected = np.array([[[7]],[[100]]])
-        pooling = MaxPooling(3)
+        pooling = MaxPoolingStep(3)
 
         # act
         output = pooling.forward_propagation(input)

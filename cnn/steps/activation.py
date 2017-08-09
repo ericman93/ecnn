@@ -12,15 +12,37 @@ class BasicActiviation(BasicStep):
     def activation(self, value):
         raise
 
-    def activation_derivative(self, input):
+    def derivative(self, input):
         raise
+
+
+class LinearActivation(BasicActiviation):
+    def activation(self, value):
+        return value
+
+    def derivative(self, value):
+        return 1
 
 
 class ReluActivation(BasicActiviation):
     def activation(self, value):
         return max(0, value)
 
+    def derivative(self, value):
+        return 0 if value < 0 else 1
+
 
 class SigmoidActivation(BasicActiviation):
     def activation(self, value):
+        return self.__sigmoid(value)
+
+    def derivative(self, value):
+        return self.__sigmoid(value) * (1 - self.__sigmoid(value))
+
+    def __sigmoid(self, value):
         return 1 / (1 + math.exp(-value))
+
+
+Sigmoid = SigmoidActivation()
+Linear = LinearActivation()
+Relu = ReluActivation()

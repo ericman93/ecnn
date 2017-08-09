@@ -1,5 +1,6 @@
 import numpy as np
 from cnn.common import get_array
+from cnn.steps.activation import Linear
 from cnn.steps.basic import BasicStep
 
 
@@ -10,14 +11,16 @@ class ConvolutionalStep(BasicStep):
     padding: number for equels
     '''
 
-    def __init__(self, filter_size, num_of_filters, x0='random', padding=None, stride=1):
+    def __init__(self, filter_size, num_of_kernels, activation=Linear, x0='random', padding=None,
+                 stride=1):
         super().__init__()
 
-        self.num_of_filters = num_of_filters
+        self.num_of_filters = num_of_kernels
         self.filter_size = filter_size
         self.x0 = x0
         self.features = None
         self.padding = padding
+        self.activation = activation
 
         self.stride = stride
 
@@ -35,13 +38,18 @@ class ConvolutionalStep(BasicStep):
             features_sum_of_products.append(
                 [[self.__get_bulk_sum_of_products(bulk, feature) for bulk in row] for row in bulks])
 
-        return np.stack(features_sum_of_products, axis=0)
+        after_convolution = np.stack(features_sum_of_products, axis=0)
+        return self.activation.forward_propagation(after_convolution)
 
     def __add_padding(self, input):
         if self.padding is None:
             return input
 
-        padding_size = [(0, 0)] + [(self.padding, self.padding)] * 2
+        if input.shape[1] == 1:
+            padding_size = [(0, 0)] * 2 + [(self.padding, self.padding)]
+        else:
+            padding_size = [(0, 0)]  + [(self.padding, self.padding)] * 2
+
         return np.lib.pad(input, padding_size, 'constant')
 
         # return input

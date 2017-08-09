@@ -4,7 +4,7 @@ from cnn.common import get_array
 
 
 class OutputStep(BasicStep):
-    def __init__(self, x0='random'):
+    def __init__(self, activation, x0='random'):
         self.x0 = x0
 
         self.weights = None

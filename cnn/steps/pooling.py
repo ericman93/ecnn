@@ -28,7 +28,7 @@ class PoolingStep(BasicStep):
         return np.array(layers)
 
 
-class MaxPooling(PoolingStep):
+class MaxPoolingStep(PoolingStep):
     def __init__(self, size):
         super().__init__(size)
 

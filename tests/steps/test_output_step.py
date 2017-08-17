@@ -14,7 +14,7 @@ class OutputStepTests(unittest.TestCase):
         step = OutputStep(x0='ones')
 
         # act
-        step.prepare(X, y)
+        step.compile(X, y)
         step.forward_propagation(input)
 
         # assert
@@ -27,7 +27,7 @@ class OutputStepTests(unittest.TestCase):
         input = np.array([[[1, 2, 3, 4]]])
 
         step = OutputStep(x0='ones')
-        step.prepare([], [0, 1, 2, 3])
+        step.compile([], [0, 1, 2, 3])
         expected_weights = np.ones((4, 5))
 
         # act
@@ -44,7 +44,7 @@ class OutputStepTests(unittest.TestCase):
             [6, 4, 3]
         ]])
         step = OutputStep(x0='ones')
-        step.prepare([], [0, 1, 2])
+        step.compile([], [0, 1, 2])
         expected_weights = np.ones((3, 7))
 
         # act
@@ -67,7 +67,7 @@ class OutputStepTests(unittest.TestCase):
             ]
         ])
         step = OutputStep(x0='ones')
-        step.prepare([], [0, 1])
+        step.compile([], [0, 1])
         expected_weights = np.ones((2, 9))
 
         # act

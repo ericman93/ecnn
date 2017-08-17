@@ -25,10 +25,10 @@ class ConvolutionalStep(BasicStep):
         self.stride = stride
 
     def forward_propagation(self, input):
+        input = self.__add_padding(input)
+
         if self.features is None:
             self.features = self.__initiliaze_features(input.shape)
-
-        input = self.__add_padding(input)
 
         feature_height, feature_widht = self.features[0].shape[1], self.features[0].shape[2]
         bulks = self.__get_sub_arrays(input, self.stride, (feature_height, feature_widht))
@@ -40,6 +40,9 @@ class ConvolutionalStep(BasicStep):
 
         after_convolution = np.stack(features_sum_of_products, axis=0)
         return self.activation.forward_propagation(after_convolution)
+
+    def update_weights(self, delta):
+        raise Error("Implement")
 
     def __add_padding(self, input):
         if self.padding is None:
@@ -67,7 +70,7 @@ class ConvolutionalStep(BasicStep):
         else:
             filter_height = filter_width = self.filter_size
 
-        feature_size += (min(filter_height, input_shape[1]), filter_width)
+        feature_size += (min(filter_height, input_shape[1]), min(filter_width, input_shape[2]))
 
         return [get_array(self.x0, feature_size) for i in range(self.num_of_filters)]
 

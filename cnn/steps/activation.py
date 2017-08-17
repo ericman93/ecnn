@@ -1,4 +1,5 @@
 import numpy as np
+import math
 from cnn.steps.basic import BasicStep
 
 
@@ -40,7 +41,7 @@ class SigmoidActivation(BasicActiviation):
         return self.__sigmoid(value) * (1 - self.__sigmoid(value))
 
     def __sigmoid(self, value):
-        return 1 / (1 + math.exp(-value))
+        return 1.0 / (1 + math.exp(-value))
 
 
 Sigmoid = SigmoidActivation()

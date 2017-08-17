@@ -6,9 +6,12 @@ from cnn.steps import MaxPoolingStep
 from cnn.steps import OutputStep
 from cnn.network import CnnNetwork
 from cnn.steps.activation import Sigmoid
+from cnn.steps.activation import Relu
+from cnn.cost_functions import MeanSquared
+from cnn.exceptions import BadInputException
 
 
-class TestNetwork(unittest.TestCase):
+class TestForworkPropogationNetwork(unittest.TestCase):
     def test_2_steps_flow_1d_input(self):
         # arrange
         steps = [
@@ -105,3 +108,37 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(expected_output.shape, output.shape)
         self.assertTrue(
             all(np.equal(expected_output.reshape(expected_output.size), output.reshape(output.size))))
+
+
+class TestBackPropogationNetwork(unittest.TestCase):
+    def test_wrong_number_of_tagged_elements(self):
+        # arrange
+        steps = [
+            ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='ones', activation=Relu),
+            OutputStep(x0='ones', activation=Sigmoid)
+        ]
+        network = CnnNetwork(steps)
+        X = [
+            [1, 2, 3, 4],
+            [4, 5, 6, 6],
+            [2, 5, 5, 6]
+        ]
+        y = [0, 1]
+
+        with self.assertRaises(BadInputException):
+            network.fit(X, y, MeanSquared)
+
+    def test_one_conv_layer(self):
+        # arrange
+        steps = [
+            ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='ones', activation=Relu),
+            OutputStep(x0='ones', activation=Sigmoid)
+        ]
+        network = CnnNetwork(steps)
+        X = [
+            [1, 2, 3, 4]
+        ]
+        y = [0]
+
+        # act
+        network.fit(X, y, MeanSquared, iterations=1, batch_size=1)

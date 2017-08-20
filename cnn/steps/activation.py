@@ -4,11 +4,17 @@ from cnn.steps.basic import BasicStep
 
 
 class BasicActiviation(BasicStep):
-    def forward_propagation(self, input):
-        flatten = input.reshape(input.size)
+    def forward_propagation(self, inputs):
+        flatten = inputs.reshape(inputs.size)
         activated = [self.activation(value) for value in flatten]
 
-        return np.array(activated).reshape(input.shape)
+        return np.array(activated).reshape(inputs.shape)
+
+    def back_propagation(self, inputs):
+        flatten = inputs.reshape(inputs.size)
+        deactivated = [self.derivative(value) for value in flatten]
+
+        return np.array(deactivated).reshape(inputs.shape)
 
     def activation(self, value):
         raise

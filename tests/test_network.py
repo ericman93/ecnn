@@ -136,9 +136,10 @@ class TestBackPropogationNetwork(unittest.TestCase):
         ]
         network = CnnNetwork(steps)
         X = [
-            [1, 2, 3, 4]
+            [1, 2, 3, 4],
+            [-1, -2, -3, -4]
         ]
-        y = [0]
+        y = [0, 1]
 
         # act
         network.fit(X, y, MeanSquared, iterations=1, batch_size=1)

@@ -22,9 +22,17 @@ class StepWithFilters(BasicStep):
         self.z = None
         self.a = None
 
+    def back_prop(self, error_rate, learning_rate):
+        pass
+
     def update_weights(self, delta):
         for i in range(len(self.filters)):
             self.filters[i, :] += delta[i]
+
+        error_rates = []
+        # for i in range(len(self.filters)):
+        #     delta
+
 
 
     def forward_propagation(self, inputs):

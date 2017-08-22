@@ -131,15 +131,48 @@ class TestBackPropogationNetwork(unittest.TestCase):
     def test_one_conv_layer(self):
         # arrange
         steps = [
-            ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='ones', activation=Relu),
-            OutputStep(x0='ones', activation=Sigmoid)
+            ConvolutionalStep(filter_size=(1, 1), num_of_kernels=1, x0='random', activation=Relu),
+            OutputStep(x0='random', activation=Sigmoid)
         ]
         network = CnnNetwork(steps)
         X = [
-            [1, 2, 3, 4],
-            [-1, -2, -3, -4]
+            [
+                [1, -2],
+                [3, 4]
+            ],
+            [
+                [-1, -2],
+                [-3, -4]
+            ]
         ]
         y = [0, 1]
 
         # act
-        network.fit(X, y, MeanSquared, iterations=1, batch_size=1)
+        network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
+
+    def test_with_pooling(self):
+        # arrange
+        steps = [
+            ConvolutionalStep(filter_size=(2, 2), num_of_kernels=2, x0='random', activation=Relu),
+            MaxPoolingStep(2),
+            OutputStep(x0='random', activation=Sigmoid)
+        ]
+        network = CnnNetwork(steps)
+        X = [
+            [
+                [1, 2, 3, 4]
+                [5, 6, 7, 8],
+                [9, 10, 11, 12],
+                [13, 14, 15, 16]
+            ],
+            [
+                [13, 14, 15, 16],
+                [9, 10, 11, 12],
+                [1, 2, 3, 4],
+                [9, 10, 11, 12],
+            ]
+        ]
+        y = [0, 1]
+
+        # act
+        network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)

@@ -53,7 +53,7 @@ class PoolingActivationTests(unittest.TestCase):
                 [-23.9, 4, 20.7]
             ]
         ])
-        expected = np.array([[[7]],[[100]]])
+        expected = np.array([[[7]], [[100]]])
         pooling = MaxPoolingStep(3)
 
         # act
@@ -62,3 +62,33 @@ class PoolingActivationTests(unittest.TestCase):
         # assert
         self.assertEqual(expected.shape, output.shape)
         self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(output.size))))
+
+    def test_pooling_saves_z_with_0_for_unpooled(self):
+        input = np.array([[
+            [4, 5, 7, 2, 8, 5],
+            [3, 5, 7, 82, 35, 4],
+            [-3, -7, 23, 6, 2, 0],
+            [-98, 23, 59, -23, 0, 2],
+            [1, 2, 3, 4, 5, 6],
+            [-7, -6, -2, 7, 0.45, 2]
+        ]])
+        expected_z = [
+            0, 1, 0, 0,
+            0, 0, 0, 1,
+            0, 0, 1, 0,
+            0, 0, 0, 1,
+            0, 0, 1, 0,
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 0, 1,
+            0, 1, 0, 0
+        ]
+
+        pooling = MaxPoolingStep(2)
+
+        # act
+        output = pooling.forward_propagation(input)
+
+        # assert
+        self.assertEqual(len(expected_z), len(pooling.z))
+        self.assertEquals(expected_z, pooling.z)

@@ -62,9 +62,6 @@ class CnnNetwork(object):
                 history.add_batch_cost(batch_cost)
 
                 for i, step in enumerate(reversed(self.steps)):
-                    if not isinstance(step, StepWithFilters):
-                        continue
-
                     delta = step.back_prop(delta, learning_rate)
 
         print(history.costs)

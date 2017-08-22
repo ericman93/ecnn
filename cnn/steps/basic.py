@@ -1,6 +1,6 @@
 class BasicStep(object):
     def __init__(self):
-        pass
+        self.z = None
 
     def prepare(self, X, y):
         pass
@@ -19,7 +19,6 @@ class StepWithFilters(BasicStep):
         self.filters = None
 
         self.activation = activation
-        self.z = None
         self.a = None
 
     def back_prop(self, error_rate, learning_rate):

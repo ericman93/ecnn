@@ -38,6 +38,12 @@ class ReluActivation(BasicActiviation):
     def derivative(self, value):
         return 0 if value < 0 else 1
 
+class TanhActivation(BasicActiviation):
+    def forward_propagation(self, inputs):
+        return np.tanh(inputs)
+
+    def back_propagation(self, inputs):
+        return 1.0 - np.tanh(inputs)**2
 
 class SigmoidActivation(BasicActiviation):
     def activation(self, value):
@@ -50,6 +56,13 @@ class SigmoidActivation(BasicActiviation):
         return 1.0 / (1 + math.exp(-value))
 
 
+class SoftmaxActivation(BasicActiviation):
+    def forward_propagation(self, inputs):
+        return np.exp(inputs) / np.sum(np.exp(inputs), axis=0)
+
+
 Sigmoid = SigmoidActivation()
 Linear = LinearActivation()
 Relu = ReluActivation()
+Tanh = TanhActivation()
+Softmax = SoftmaxActivation()

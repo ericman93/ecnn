@@ -18,29 +18,27 @@ class OutputStep(StepWithFilters):
         self.classes = list(set(y))
 
     def back_prop(self, delta, leraning_rate=0.001):
-        errors = []
-        for i in range(self.filters.shape[1]):
-            # filter += delta[i]
-            neuron_weights = self.filters[:, i]
-            neuron_deltas = (delta * self.activation.back_propagation(self.z)).dot(leraning_rate)
-            self.filters[:, i] += neuron_deltas
+        errors = np.zeros(self.filters[0].size)
 
-            neuron_error = np.sum(neuron_deltas)
+        for i, filter in enumerate(self.filters):
+            error = filter * delta[i]
+            filter += error * self.inputs * leraning_rate
+            errors += error
 
-            errors.append(neuron_error)
-
-        return errors[1 if self.use_bias else 0:]
+        return errors
 
     def calc_neurons_values(self, input):
         flatten_input = input.reshape(input.size)
-        # bias
-        flatten_input = np.append([1], flatten_input)
+
+        if self.use_bias:
+            flatten_input = np.append([1], flatten_input)
+
+        self.inputs = flatten_input
 
         if self.filters is None:
             self.filters = self.__initiliaze_weights(flatten_input)
 
-        output = np.array([flatten_input.dot(neuron_weights.T) for neuron_weights in self.filters])
-        return self.activation.forward_propagation(output)
+        return np.array([flatten_input.dot(neuron_weights.T) for neuron_weights in self.filters])
 
     def __initiliaze_weights(self, flatten_input):
         # TODO: not use only ones - use what ever X0 is assign for

@@ -25,28 +25,31 @@ class ConvolutionalStep(StepWithFilters):
 
     def back_prop(self, delta, leraning_rate=0.001):
         errors = []
-        f = np.array(self.filters)
-        old_shape = f.shape
-        fltten = f.reshape((f.shape[0], f.shape[1] * f.shape[2] * f.shape[3]))
 
-        delta_sum = np.sum(delta)
         for filter in self.filters:
-            filter_error = 0
-            # filter += delta[i]
-            # neuron_weights = fltten[i, :]
-            filter_gradiant = (delta * self.activation.back_propagation(self.z).reshape(self.z.size)).dot(leraning_rate)
-            graidnat_sum = np.sum(filter_gradiant)
+            error = 0
 
-            filter += graidnat_sum
-            # neuron_error = np.sum(filter_gradient) * self.activation.derivative(self.z)
-            errors.append(graidnat_sum)
+
+        # delta_sum = np.sum(delta)
+        # deltas = np.array(delta).reshape(self.z.shape)
+        # neuron_errors = []
+
+        # for filter in self.filters:
+        #     filter_gradiant = (self.activation.back_propagation(self.z).reshape(self.z.size)).dot(leraning_rate)
+        #     graidnat_sum = np.sum(filter_gradiant)
+        #
+        #     filter += graidnat_sum
+        #
+        #     errors.append(graidnat_sum)
 
         return errors
 
     def calc_neurons_values(self, input):
+        self.inputs = input
         input = self.__add_padding(input)
 
         if self.filters is None:
+            self.neuron_count = input.size
             self.filters = self.__initiliaze_features(input.shape)
 
         feature_height, feature_widht = self.filters[0].shape[1], self.filters[0].shape[2]

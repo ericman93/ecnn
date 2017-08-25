@@ -5,10 +5,12 @@ from cnn.steps.basic import BasicStep
 
 class BasicActiviation(BasicStep):
     def forward_propagation(self, inputs):
-        flatten = inputs.reshape(inputs.size)
-        activated = [self.activation(value) for value in flatten]
+        pass
+        # flatten = inputs.reshape(inputs.size)
+        # activated = [self.activation(value) for value in flatten]
 
-        return np.array(activated).reshape(inputs.shape)
+        # return np.array(activated).reshape(inputs.shape)
+
 
     def back_propagation(self, inputs):
         flatten = inputs.reshape(inputs.size)
@@ -38,27 +40,32 @@ class ReluActivation(BasicActiviation):
     def derivative(self, value):
         return 0 if value < 0 else 1
 
+
 class TanhActivation(BasicActiviation):
     def forward_propagation(self, inputs):
         return np.tanh(inputs)
 
     def back_propagation(self, inputs):
-        return 1.0 - np.tanh(inputs)**2
+        return 1.0 - np.tanh(inputs) ** 2
+
 
 class SigmoidActivation(BasicActiviation):
-    def activation(self, value):
-        return self.__sigmoid(value)
+    def forward_propagation(self, inputs):
+        return self.__sigmoid(inputs)
 
-    def derivative(self, value):
-        return self.__sigmoid(value) * (1 - self.__sigmoid(value))
+    def derivative(self, inputs):
+        return self.__sigmoid(inputs) * (1 - self.__sigmoid(inputs))
 
-    def __sigmoid(self, value):
-        return 1.0 / (1 + math.exp(-value))
+    def __sigmoid(self, inputs):
+        return 1.0 / (1 + np.exp(-inputs))
 
 
 class SoftmaxActivation(BasicActiviation):
     def forward_propagation(self, inputs):
         return np.exp(inputs) / np.sum(np.exp(inputs), axis=0)
+
+    def back_propagation(self, inputs):
+        raise
 
 
 Sigmoid = SigmoidActivation()

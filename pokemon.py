@@ -6,9 +6,12 @@ from cnn.steps import ConvolutionalStep
 from cnn.steps import ReluActivation
 from cnn.steps import MaxPoolingStep
 from cnn.steps import OutputStep
+from cnn.steps import Flatten
 from cnn.network import CnnNetwork
 from cnn.steps.activation import Sigmoid
 from cnn.steps.activation import Relu
+from cnn.steps.activation import Tanh
+from cnn.steps.activation import Softmax
 from cnn.cost_functions import MeanSquared
 
 
@@ -64,9 +67,10 @@ steps = [
     MaxPoolingStep(2),
     ConvolutionalStep(filter_size=(3, 3), num_of_kernels=5, x0='random', activation=Relu),
     MaxPoolingStep(2),
-    OutputStep(x0='random', activation=Sigmoid)
+    Flatten(),
+    OutputStep(x0='random', activation=Softmax)
 ]
 
 network = CnnNetwork(steps)
-network.fit(X, y, MeanSquared, iterations=1000, batch_size=1)
+network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
 

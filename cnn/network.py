@@ -57,13 +57,11 @@ class CnnNetwork(object):
             for batch_input, batch_tag in batch:
                 data = batch_input
 
-                prev_step = None
                 for step in self.steps:
-                    # print(step.__class__.__name__)
                     data = step.forward_propagation(data)
-                    prev_step = step
 
                 cost = cost_function.cost(batch_tag, data)
+                print(cost)
                 batch_cost += np.sum(cost)
 
                 delta = cost_function.derivative(batch_tag, data) * step.activation.derivative(step.z)
@@ -71,7 +69,7 @@ class CnnNetwork(object):
                 # print("Backprop")
                 for i, step in enumerate(reversed(self.steps)):
                     # print(step.__class__.__name__)
-                    delta = step.back_prop(delta, learning_rate)
+                        delta = step.back_prop(delta, learning_rate)
 
             history.add_batch_cost(batch_cost)
 

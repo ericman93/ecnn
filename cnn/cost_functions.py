@@ -23,5 +23,8 @@ class CrossEntropyLogisticRegressionError(BasicErrorFunction):
         return - np.sum(np.multiply(t, np.log(y)) + np.multiply((1 - t), np.log(1 - y)))
         # return np.sum(real * np.log(prediction)) * -1
 
+    def derivative(self, real, prediction):
+        raise
+
 
 MeanSquared = MeanSquaredError()

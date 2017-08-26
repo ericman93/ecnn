@@ -5,11 +5,10 @@ from cnn.steps.basic import BasicStep
 
 class BasicActiviation(BasicStep):
     def forward_propagation(self, inputs):
-        pass
-        # flatten = inputs.reshape(inputs.size)
-        # activated = [self.activation(value) for value in flatten]
+        flatten = inputs.reshape(inputs.size)
+        activated = [self.activation(value) for value in flatten]
 
-        # return np.array(activated).reshape(inputs.shape)
+        return np.array(activated).reshape(inputs.shape)
 
 
     def back_propagation(self, inputs):
@@ -64,7 +63,7 @@ class SoftmaxActivation(BasicActiviation):
     def forward_propagation(self, inputs):
         return np.exp(inputs) / np.sum(np.exp(inputs), axis=0)
 
-    def back_propagation(self, inputs):
+    def back_propagation(self, inputs, delta):
         raise
 
 

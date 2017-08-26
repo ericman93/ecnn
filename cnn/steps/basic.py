@@ -8,6 +8,9 @@ class BasicStep(object):
     def forward_propagation(self, input):
         raise Error("Not implemented")
 
+    def back_prop(self, delta):
+        raise
+
     def compile(self, X, y):
         pass
 
@@ -35,6 +38,7 @@ class StepWithFilters(BasicStep):
 
 
     def forward_propagation(self, inputs):
+        self.inputs = inputs
         self.z = self.calc_neurons_values(inputs)
         self.a = self.activation.forward_propagation(self.z)
 

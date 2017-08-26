@@ -19,20 +19,26 @@ class OutputStep(StepWithFilters):
 
     def back_prop(self, delta, leraning_rate=0.001):
         errors = np.zeros(self.filters[0].size)
+        # errors = []
+        #
+        # for i in range(self.inputs.shape[0]):
+        #     error = self.filters[:, i] * delta
+        #     self.filters[:, i] += error * self.inputs[:, i] * leraning_rate
+        #
+        #     errors.append(error)
 
         for i, filter in enumerate(self.filters):
-            error = filter * delta[i]
-            filter += error * self.inputs * leraning_rate
+            error = filter * delta[i] * self.activation.back_propagation(self.inputs)
+            filter += error * leraning_rate
             errors += error
 
-        return errors
+        return errors[1 if self.use_bias else 0:]
 
     def calc_neurons_values(self, input):
         flatten_input = input.reshape(input.size)
 
         if self.use_bias:
             flatten_input = np.append([1], flatten_input)
-
         self.inputs = flatten_input
 
         if self.filters is None:

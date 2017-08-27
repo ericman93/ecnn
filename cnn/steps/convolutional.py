@@ -11,7 +11,7 @@ class ConvolutionalStep(StepWithFilters):
     padding: number for equels
     '''
 
-    def __init__(self, filter_size, num_of_kernels, activation=Linear, x0='random', padding=None,
+    def     __init__(self, filter_size, num_of_kernels, activation=Linear, x0='random', padding=None,
                  stride=1):
         super().__init__(activation)
 
@@ -23,21 +23,25 @@ class ConvolutionalStep(StepWithFilters):
 
         self.stride = stride
 
-    def __convolution(self, a, filter):
+    def convolution(self, a, filter):
         feature_height, feature_widht = filter.shape[0], filter.shape[1]
         # a = self.__add_padding(a, (max(0, int((feature_height - a.shape[1]))), max(0, int((feature_widht - a.shape[2])))))
         a = self.__add_padding(a, (feature_height - 1, feature_widht - 1))
 
         features_sum_of_products = []
 
-        for input in a:
-            weights = self.__get_sub_arrays_2d(input, self.stride, (feature_height, feature_widht))
-            features_sum_of_products.append(
-                [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
+        # for input in a:
+        #     weights = self.__get_sub_arrays_2d(input, self.stride, (feature_height, feature_widht))
+        #     features_sum_of_products.append(
+        #         [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
+        weights = self.__get_sub_arrays(a, self.stride, (feature_height, feature_widht))
+        features_sum_of_products.append(
+            [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
 
         return np.array(features_sum_of_products)
 
-    def back_prop(self, delta, leraning_rate=0.001):
+    def back_prop(self, delta, leraning_rate=0.00001):
+        # print("start")
         errors = np.zeros(self.inputs.shape)
 
         # this is the same as doing
@@ -45,31 +49,20 @@ class ConvolutionalStep(StepWithFilters):
         # and then updating the weights in a loop
         # OR IS IT?
 
+        z_derivitive = self.activation.back_propagation(self.z)
         for i, filter in enumerate(self.filters):
             # filter_delta = np.stack([delta[i]] * self.inputs.shape[0], axis=0)
             # after_convolution = filter * filter_delta.transpose()
-            error = self.__convolution(filter, delta[i].transpose()) * self.activation.back_propagation(self.inputs)
-            filter += (np.sum(error) * leraning_rate)
+            # error = self.convolution(filter, delta[i].transpose()) #* self.activation.back_propagation(self.z)
+            error = self.convolution(filter, delta[i].transpose() * z_derivitive[i]) #* z_derivitive[i]
+            # error = self.__convolution(filter, delta[i].transpose()) * self.activation.back_propagation(self.inputs)
+            # filter += np.sum(np.dot(error, self.inputs.transpose())) * leraning_rate
 
             # error = self.filters[i] * delta[i] #* self.activation.back_propagation(self.inputs)
             # filter += error * leraning_rate
             errors += error
 
         return errors
-        # delta_sum = np.sum(detlta)
-        # deltas = np.array(delta).reshape(self.z.shape)
-        # neuron_errors = []
-
-        # for filter in self.filters:
-        #     filter_gradiant = (self.activation.back_propagation(self.z).reshape(self.z.size)).dot(leraning_rate)
-
-        #     graidnat_sum = np.sum(filter_gradiant)
-        #
-        #     filter += graidnat_sum
-        #
-        #     errors.append(graidnat_sum)
-
-        return np.sum(errors, axis=(1, 2))
 
     def calc_neurons_values(self, input):
         self.inputs = input
@@ -87,6 +80,9 @@ class ConvolutionalStep(StepWithFilters):
         for feature in self.filters:
             features_sum_of_products.append(
                 [[self.__get_bulk_sum_of_products(bulk, feature) for bulk in row] for row in bulks])
+
+        # from  scipy.ndimage.filters import convolve
+        # a = convolve(input, self.filters)
 
         return np.stack(features_sum_of_products, axis=0)
 

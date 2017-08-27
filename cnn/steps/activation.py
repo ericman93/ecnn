@@ -10,7 +10,6 @@ class BasicActiviation(BasicStep):
 
         return np.array(activated).reshape(inputs.shape)
 
-
     def back_propagation(self, inputs):
         flatten = inputs.reshape(inputs.size)
         deactivated = [self.derivative(value) for value in flatten]
@@ -33,6 +32,9 @@ class LinearActivation(BasicActiviation):
 
 
 class ReluActivation(BasicActiviation):
+    # def forward_propagation(self, inputs):
+    #     inputs[inputs<0: 0]
+
     def activation(self, value):
         return max(0, value)
 
@@ -61,10 +63,29 @@ class SigmoidActivation(BasicActiviation):
 
 class SoftmaxActivation(BasicActiviation):
     def forward_propagation(self, inputs):
-        return np.exp(inputs) / np.sum(np.exp(inputs), axis=0)
+        max_value = 500
 
-    def back_propagation(self, inputs, delta):
-        raise
+        normalized =[min(i, max_value) if i > 0 else max(i, max_value * -1) for i in inputs]
+        exps = np.exp(normalized)
+        # print(f"softmax {inputs}")
+        # exps = np.exp(inputs)
+
+        self.inputs = inputs
+        self.values = exps / np.sum(exps, axis=0)
+
+        return self.values
+
+    def back_propagation(self, value):
+        gradients = [0] * len(self.values)
+
+        for i, value in enumerate(self.values):
+            for j, input in enumerate(self.inputs):
+                if i == j:
+                    gradients[i] += self.values[i] * (1 - self.inputs[i])
+                else:
+                    gradients[i]  += -self.values[i] * self.inputs[j]
+
+        return np.array(gradients)
 
 
 Sigmoid = SigmoidActivation()

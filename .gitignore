@@ -1,3 +1,4 @@
 .idea/
 .python-version
-cnn/steps/__pycache__/
+cnn/__pycache__/*
+cnn/steps/__pycache__/*

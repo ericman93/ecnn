@@ -11,19 +11,38 @@ class OutputStep(StepWithFilters):
         self.x0 = x0
         self.activation = activation
         self.use_bias = use_bias
-
+        #
         self.classes = None
 
     def compile(self, X, y):
-        self.classes = list(set(y))
+        self.classes = list([0,1,2])
+        # self.classes = list(set(y))
 
-    def back_prop(self, delta, leraning_rate=0.001):
-        # errors = np.sum((np.array(self.filters).transpose() *  delta) * self.activation.back_propagation(self.z), axis=1)
+    def back_prop(self, delta, leraning_rate):
+        delta = delta * self.activation.back_propagation(self.z)
+        # errors = np.sum((np.array(self.filters).transpose() * delta), axis=1)
+        errors = np.zeros(len(self.inputs))
+        # print(f"error: {errors}")
+
         # self.filters += errors * self.inputs.transpose() * leraning_rate
+        for i, filter in enumerate(self.filters):
+            error = filter * delta[i]
+
+            filter -= error * leraning_rate
+
+            errors += error
+
+        # print(f"inputs: {self.inputs[:, 0:10]}")
+        # print(f"z: {self.z}")
+        # print(f"a: {self.z}")
+        # print(f"delta: {delta}")
+        # after_z = np.array([self.inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
+        # print(f"z after: {after_z}")
+        # print(f"a after: {self.activation.forward_propagation(after_z)}")
 
         # return errors[1 if self.use_bias else 0:]
 
-        errors = np.zeros(self.filters[0].size)
+        # errors = np.zeros(self.filters[0].size)
         # errors = []
         #
         # for i in range(self.inputs.shape[0]):
@@ -32,12 +51,13 @@ class OutputStep(StepWithFilters):
         #
         #     errors.append(error)
 
-        z_prims = self.activation.back_propagation(self.z)
+        # z_prims = self.activation.back_propagation(self.z)
 
-        for i, filter in enumerate(self.filters):
-            error = filter * delta[i] * z_prims[i]
-            filter += error * leraning_rate
-            errors += error
+        # for i, filter in enumerate(self.filters):
+        #     error = filter * delta[i] * z_prims[i]
+        #     filter += error * leraning_rate
+        #     errors += error
+        # errors = np.dot(self.filters.tra)
 
         return errors[1 if self.use_bias else 0:]
 
@@ -54,7 +74,6 @@ class OutputStep(StepWithFilters):
         # print(f"inputs: {self.inputs[0:10]}")
 
         z = np.array([inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
-        print(f"z: {z}")
         return z
 
     def __initiliaze_weights(self, flatten_input):

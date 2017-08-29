@@ -50,13 +50,15 @@ class ConvolutionalStep(StepWithFilters):
         # OR IS IT?
 
         z_derivitive = self.activation.back_propagation(self.z)
+        delta = delta *  self.activation.back_propagation(self.z)
         for i, filter in enumerate(self.filters):
             # filter_delta = np.stack([delta[i]] * self.inputs.shape[0], axis=0)
             # after_convolution = filter * filter_delta.transpose()
             # error = self.convolution(filter, delta[i].transpose()) #* self.activation.back_propagation(self.z)
-            error = self.convolution(filter, delta[i].transpose() * z_derivitive[i]) #* z_derivitive[i]
+            error = self.convolution(filter, delta[i].transpose()) #* z_derivitive[i]
             # error = self.__convolution(filter, delta[i].transpose()) * self.activation.back_propagation(self.inputs)
-            # filter += np.sum(np.dot(error, self.inputs.transpose())) * leraning_rate
+            # filter += np.sum(error * self.inputs) * leraning_rate
+            filter += np.average(error * self.inputs) * leraning_rate
 
             # error = self.filters[i] * delta[i] #* self.activation.back_propagation(self.inputs)
             # filter += error * leraning_rate

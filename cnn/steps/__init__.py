@@ -5,3 +5,4 @@ from .activation import LinearActivation
 from .convolutional import ConvolutionalStep
 from .output import OutputStep
 from .pooling import MaxPoolingStep
+from .core import Flatten

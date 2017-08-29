@@ -1,5 +1,6 @@
 import pickle
 import json
+import operator
 import numpy as np
 import os.path
 from random import shuffle
@@ -12,8 +13,11 @@ class CnnNetwork(object):
     def __init__(self, steps):
         self.steps = steps
 
-    def predict(self, input):
-        pass
+    def predict(self, inputs):
+        classes = self.forward_propagation(inputs)
+        index, value = max(enumerate(classes), key=operator.itemgetter(1))
+
+        return index, value
 
     def forward_propagation(self, input):
         data = self.__to_3d_shape(np.array(input))
@@ -96,12 +100,13 @@ class CnnNetwork(object):
                     delta = step.back_prop(delta, learning_rate)
 
 
-                print('---')
+                print(f'--- {batch_index}/{len(batch)} ---')
 
                 # if batch_index%30 == 0:
                 #     self.save(f"network.b")
 
-            self.save('pokemon-cards.network.b')
+            self.save(f'pokemon-cards.network.sride.{learning_rate}.b')
+
             # with open('costs.json', 'w') as costs_file:
             #     json.dump(history.costs, costs_file)
 

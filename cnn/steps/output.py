@@ -28,7 +28,9 @@ class OutputStep(StepWithFilters):
         for i, filter in enumerate(self.filters):
             error = filter * delta[i]
 
-            filter -= error * leraning_rate
+            # SHOULD BE + SIGN
+            # but it dont really working for softmax, so i changed it -
+            filter -= error * leraning_rate * self.inputs
 
             errors += error
 

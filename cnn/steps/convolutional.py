@@ -23,7 +23,7 @@ class ConvolutionalStep(StepWithFilters):
 
         self.stride = stride
 
-    def convolution(self, a, filter):
+    def convolution(self, a, filter, stride):
         feature_height, feature_widht = filter.shape[0], filter.shape[1]
         # a = self.__add_padding(a, (max(0, int((feature_height - a.shape[1]))), max(0, int((feature_widht - a.shape[2])))))
         a = self.__add_padding(a, (feature_height - 1, feature_widht - 1))
@@ -34,9 +34,9 @@ class ConvolutionalStep(StepWithFilters):
         #     weights = self.__get_sub_arrays_2d(input, self.stride, (feature_height, feature_widht))
         #     features_sum_of_products.append(
         #         [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
-        weights = self.__get_sub_arrays(a, self.stride, (feature_height, feature_widht))
-        features_sum_of_products.append(
-            [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
+        weights = self.__get_sub_arrays(a, stride, (feature_height, feature_widht))
+        #TODO: fix bugggg
+        features_sum_of_products = [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights]
 
         return np.array(features_sum_of_products)
 
@@ -55,9 +55,10 @@ class ConvolutionalStep(StepWithFilters):
             # filter_delta = np.stack([delta[i]] * self.inputs.shape[0], axis=0)
             # after_convolution = filter * filter_delta.transpose()
             # error = self.convolution(filter, delta[i].transpose()) #* self.activation.back_propagation(self.z)
-            error = self.convolution(filter, delta[i].transpose()) #* z_derivitive[i]
+            error = self.convolution(filter, delta[i].transpose(),1) #* z_derivitive[i]
             # error = self.__convolution(filter, delta[i].transpose()) * self.activation.back_propagation(self.inputs)
             # filter += np.sum(error * self.inputs) * leraning_rate
+            # filter += np.average(error * self.inputs) * leraning_rate
             filter += np.average(error * self.inputs) * leraning_rate
 
             # error = self.filters[i] * delta[i] #* self.activation.back_propagation(self.inputs)

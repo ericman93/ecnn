@@ -88,7 +88,7 @@ class SoftmaxActivation(BasicActiviation):
         # return np.sum(jac, axis=1)
 
         gradients = [0] * len(self.values)
-        #
+
         for i, value in enumerate(self.values):
             for j, input in enumerate(self.inputs):
                 if i == j:

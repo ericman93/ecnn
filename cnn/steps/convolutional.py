@@ -11,7 +11,7 @@ class ConvolutionalStep(StepWithFilters):
     padding: number for equels
     '''
 
-    def     __init__(self, filter_size, num_of_kernels, activation=Linear, x0='random', padding=None,
+    def __init__(self, filter_size, num_of_kernels, activation=Linear, x0='random', padding=None,
                  stride=1):
         super().__init__(activation)
 
@@ -24,9 +24,11 @@ class ConvolutionalStep(StepWithFilters):
         self.stride = stride
 
     def convolution(self, a, filter, stride):
-        feature_height, feature_widht = filter.shape[0], filter.shape[1]
+        feature_height, feature_widht = filter.shape[-2], filter.shape[-1]
         # a = self.__add_padding(a, (max(0, int((feature_height - a.shape[1]))), max(0, int((feature_widht - a.shape[2])))))
-        a = self.__add_padding(a, (feature_height - 1, feature_widht - 1))
+
+        if filter.shape[-1] >= a.shape[-1] or filter.shape[-2] >= a.shape[-2]:
+            a = self.__add_padding(a, (feature_height - 1, feature_widht - 1))
 
         features_sum_of_products = []
 
@@ -35,8 +37,8 @@ class ConvolutionalStep(StepWithFilters):
         #     features_sum_of_products.append(
         #         [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights])
         weights = self.__get_sub_arrays(a, stride, (feature_height, feature_widht))
-        #TODO: fix bugggg
-        features_sum_of_products = [[self.__get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights]
+        # TODO: fix bugggg
+        features_sum_of_products = [[self.get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights]
 
         return np.array(features_sum_of_products)
 
@@ -49,21 +51,30 @@ class ConvolutionalStep(StepWithFilters):
         # and then updating the weights in a loop
         # OR IS IT?
 
-        z_derivitive = self.activation.back_propagation(self.z)
-        delta = delta *  self.activation.back_propagation(self.z)
-        for i, filter in enumerate(self.filters):
-            # filter_delta = np.stack([delta[i]] * self.inputs.shape[0], axis=0)
-            # after_convolution = filter * filter_delta.transpose()
-            # error = self.convolution(filter, delta[i].transpose()) #* self.activation.back_propagation(self.z)
-            error = self.convolution(filter, delta[i].transpose(),1) #* z_derivitive[i]
-            # error = self.__convolution(filter, delta[i].transpose()) * self.activation.back_propagation(self.inputs)
-            # filter += np.sum(error * self.inputs) * leraning_rate
-            # filter += np.average(error * self.inputs) * leraning_rate
-            filter += np.average(error * self.inputs) * leraning_rate
+        delta = delta * self.activation.back_propagation(self.z)
+        # bulks = self.__get_sub_arrays(self.inputs, self.stride, (self.filters[0].shape[-2], self.filters[0].shape[-1]))
 
-            # error = self.filters[i] * delta[i] #* self.activation.back_propagation(self.inputs)
-            # filter += error * leraning_rate
-            errors += error
+        for i, filter in enumerate(self.filters):
+
+            error = self.convolution(filter, delta[i].transpose(), self.stride)
+
+            input_height, input_width = errors.shape[-2], errors.shape[-1]
+            size_height = error.shape[-2]
+            size_width = error.shape[-1]
+
+            bulks = []
+
+            for i in range(0, input_height, self.stride):
+                row = []
+                if i + size_height > input_height:
+                    continue
+
+                for j in range(0, input_width, self.stride):
+                    if j + size_width > input_width:
+                        continue
+                    errors[:, i: i + size_height, j: j + size_width] += error
+
+            filter += np.average(self.convolution(self.inputs, error, self.stride)) * (leraning_rate) # /100
 
         return errors
 
@@ -82,7 +93,7 @@ class ConvolutionalStep(StepWithFilters):
 
         for feature in self.filters:
             features_sum_of_products.append(
-                [[self.__get_bulk_sum_of_products(bulk, feature) for bulk in row] for row in bulks])
+                [[self.get_bulk_sum_of_products(bulk, feature) for bulk in row] for row in bulks])
 
         # from  scipy.ndimage.filters import convolve
         # a = convolve(input, self.filters)
@@ -105,7 +116,7 @@ class ConvolutionalStep(StepWithFilters):
 
         # return input
 
-    def __get_bulk_sum_of_products(self, bulk, feature):
+    def get_bulk_sum_of_products(self, bulk, feature):
         multiplied = feature * bulk
         return np.sum(np.reshape(multiplied, multiplied.size))
 

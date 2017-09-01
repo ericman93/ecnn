@@ -34,13 +34,13 @@ class OutputStep(StepWithFilters):
 
             errors += error
 
-        # print(f"inputs: {self.inputs[:, 0:10]}")
-        # print(f"z: {self.z}")
-        # print(f"a: {self.z}")
-        # print(f"delta: {delta}")
-        # after_z = np.array([self.inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
-        # print(f"z after: {after_z}")
-        # print(f"a after: {self.activation.forward_propagation(after_z)}")
+        print(f"inputs: {self.inputs.reshape(self.inputs.size)[: 10]}")
+        print(f"z: {self.z}")
+        print(f"a: {self.a}")
+        print(f"delta: {delta}")
+        after_z = np.array([self.inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
+        print(f"z after: {after_z}")
+        print(f"a after: {self.activation.forward_propagation(after_z)}")
 
         # return errors[1 if self.use_bias else 0:]
 

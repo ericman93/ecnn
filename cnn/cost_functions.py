@@ -19,17 +19,19 @@ class MeanSquaredError(BasicErrorFunction):
 
 
 class CrossEntropyLogisticRegressionError(BasicErrorFunction):
-    def cost(self, real, prediction):
-        sum = 0
-        for i in range(len(real)):
-            sum += (prediction[i] + np.log(real[i])) + (1 - prediction[i]) * np.log(1 - real[i])
+    def __init__(self):
+        super().__init__()
+        self.epsilon = 1e-7
 
-        return sum
-        # return -np.sum(np.multiply(prediction, np.log(real)) + np.multiply((1 - prediction), np.log(1 - real)))
-        # return np.sum(real * np.log(prediction)) * -1
+    def cost(self, real, prediction):
+        t = np.array(real)
+        p = np.clip(prediction, self.epsilon, 1 - self.epsilon)
+        return - np.sum(np.multiply(t, np.log(p)) + np.multiply((1 - t), np.log(1 - p)))
 
     def derivative(self, real, prediction):
-        return prediction - real
+        return real - prediction
+        # t = np.array(real)
+        # return (prediction - t) /   (prediction * (1 - prediction))
 
 
 MeanSquared = MeanSquaredError()

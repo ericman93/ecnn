@@ -63,12 +63,13 @@ class SigmoidActivation(BasicActiviation):
 
 class SoftmaxActivation(BasicActiviation):
     def forward_propagation(self, inputs):
-        max_value = 500
-        normalized = [min(i, max_value) if i > 0 else max(i, max_value * -1) for i in inputs]
+        # print(f"z: {inputs}")
+        # max_value = 500
+        # normalized = [min(i, max_value) if i > 0 else max(i, max_value * -1) for i in inputs]
         # print(f"normalized: {normalized}")
 
         self.inputs = inputs
-        self.values = self.__signal(normalized)
+        self.values = self.__signal(inputs)
         return self.values
         # max_value = 500
         #
@@ -99,8 +100,8 @@ class SoftmaxActivation(BasicActiviation):
         return np.array(gradients) #* -1
 
     def __signal(self, inputs):
-        exps = np.exp(inputs)
-        return exps / np.sum(exps, axis=0)
+        exps = np.exp(inputs - np.max(inputs))
+        return exps / exps.sum(axis=0)
 
 
 Sigmoid = SigmoidActivation()

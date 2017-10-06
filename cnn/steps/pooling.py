@@ -8,10 +8,10 @@ class PoolingStep(BasicStep):
         self.size = size
         self.inputs = None
 
-    def forward_propagation(self, input):
-        self.inputs = input
+    def forward_propagation(self, inputs):
+        self.inputs = inputs
         self.z = []
-        self.a = self.__get_pooled(input)
+        self.a = self.__get_pooled(inputs)
         return self.a
 
     def back_prop(self, delta, learnin_rate):
@@ -28,21 +28,21 @@ class PoolingStep(BasicStep):
 
         return np.array(final_delta).reshape(self.z.shape)
 
-    def __get_pooled(self, input):
-        input_hight = input.shape[1]
-        input_widht = input.shape[2]
+    def __get_pooled(self, inputs):
+        input_hight = inputs.shape[-2]
+        input_widht = inputs.shape[-1]
 
         layers = []
         z = []
 
-        for layer_index in range(0, input.shape[0]):
+        for layer_index in range(0, inputs.shape[0]):
             layer = []
 
             for i in range(0, input_hight, self.size):
                 row = []
 
                 for j in range(0, input_widht, self.size):
-                    bulk = input[layer_index, i: i + self.size, j: j + self.size]
+                    bulk = inputs[layer_index, i: i + self.size, j: j + self.size]
                     # z = np.copy(bulk)
 
                     pooled = self.pool(bulk)

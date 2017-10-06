@@ -16,18 +16,42 @@ from cnn.steps.activation import Softmax
 from cnn.cost_functions import MeanSquared
 from cnn.cost_functions import CrossEntropyLogisticRegression
 
+from tensorflow.python import debug as tf_debug
 
+cards_dir = '/home/eric/dev/pokemon/cards/'
 categories = {'trainer': 0, 'pokemon': 1, 'energy': 2}
+image_size = (150, 110)
+
+
+def save_steps(inputs, network):
+    data = network.to_3d_shape(np.array(inputs))
+    for i, step in enumerate(network.steps):
+        data = step.forward_propagation(data)
+
+        if len(data.shape) == 3:
+            for j in range(data.shape[0]):
+                filter = data[j, :, :].dot(200)
+                shape = filter.shape
+                filter = np.array([np.uint8(px) for px in filter.reshape(filter.size)]).reshape(shape)
+
+                a = 2
+
+                file_name = f"step#{i}@{step.__class__.__name__}_filter#{j}"
+                Image.fromarray(filter).save(f'output/{file_name}.bmp')
+
+    return data
 
 
 def get_image_matrix(image_path, size, graysacle=False):
     image = Image.open(image_path)
-    image.thumbnail((size, size), Image.ANTIALIAS)
+
+    revese_size = (size[1], size[0])
+    image.thumbnail(revese_size, Image.ANTIALIAS)
 
     if graysacle:
         return np.asarray(image.convert("L"))
     else:
-        result = np.zeros((3, size, size))
+        result = np.zeros((3,) + size)
         matrix = np.asarray(image)
         red = matrix[:, :, 0]
         green = matrix[:, :, 1]
@@ -35,51 +59,137 @@ def get_image_matrix(image_path, size, graysacle=False):
 
         # Image.fromarray(red).save('red.bmp')
         # Image.fromarray(green).save('green.bmp')
-        # Image.fromarray(blue).save('blue.bmp')
+        Image.fromarray(blue).save('blue.bmp')
 
         merged = np.stack([red, green, blue], axis=0)
 
         result[:merged.shape[0], :merged.shape[1], :merged.shape[2]] = merged
-        return result.dot(1/256)
+        return result.dot(1 / 256)
+        # return result
 
-        # return merged.dot(1/256)
+        # return merged.dot(1 / 256)
 
 
 def get_cards(X, y):
-    cards_dir = '/home/eric/dev/pokemon/cards/'
+    print("Getting cards")
 
     for category, tag in categories.items():
+        print(category)
         file_names = os.listdir(os.path.join(cards_dir, category))
+        category_x = []
+        category_y = []
 
-        for index, image_path in enumerate(file_names[0:100]):
+        for index, image_path in enumerate(file_names[0:10]):
+            # for index, image_path in enumerate(file_names):
             image_path = os.path.join(cards_dir, category, image_path)
 
-            image_matrix = get_image_matrix(image_path, 100)
+            image_matrix = get_image_matrix(image_path, image_size)
 
-            X.append(image_matrix)
-            y.append(tag)
+            category_x.append(image_matrix)
+            category_y.append(tag)
 
-def validate():
-    network = CnnNetwork()
-    network.load('network.b')
+        # When taking 900 pictures
+        if category == 'energy':
+            category_x = category_x * 7
+            category_y = category_y * 7
 
-    image_matrix = get_image_matrix('validation/charizard.png', 100)
+        X += category_x
+        y += category_y
+
+
+def validate(save=False):
+    network = CnnNetwork([])
+    network.load('pokemon-cards.b')
+    # network.load('network.b')
+
+    # dir = os.path.join(cards_dir, 'test')
+    dir = 'validation'
+
+    file_names = os.listdir(dir)
+    for file_name in file_names:
+        image_path = os.path.join(dir, file_name)
+
+        image_matrix = get_image_matrix(image_path, image_size)
+
+        if save and file_name == 'p2.jpg':
+            save_steps(image_matrix, network)
+        else:
+            # continue
+            # print('--')
+            predictions = network.forward_propagation(image_matrix)
+            # print(predictions)
+            predicted_class, score = network.predict(image_matrix)
+            class_name = [name for name, value in categories.items() if value == predicted_class][0]
+
+            print(f"{file_name} - {class_name} ({predictions})")
+            # print('--')
+            # card_type = [k for k,v in categories.items() if v == prediction[0]][0]
+            # print(f"{file_name} is a {card_type} ({prediction[1]})")
+
+
+def keras_fit():
+    import keras
+
+    # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+    # sess.add_tensor_filter("has_inf_or_nan", tf_debug.has_inf_or_nan)
+
+    X = []
+    y = []
+    get_cards(X, y)
+
+    sample = 5
+    y = np.atleast_2d(keras.utils.to_categorical(y)[sample])
+    X = np.atleast_2d(X[sample].reshape(X[sample].size))
+
+    model = keras.models.Sequential()
+    model.add(
+        keras.layers.Dense(3, input_dim=X.size, activation='softmax', use_bias=True,
+                           kernel_initializer=keras.initializers.Zeros())
+    )
+    sgd = keras.optimizers.SGD(lr=0.0001)
+    model.compile(loss='categorical_crossentropy', optimizer=sgd)
+
+    model.fit(X, y, epochs=10, shuffle=True, verbose=2)
+
+
+def tensorflow_fit():
+    import tensorflow as tf
+
+    X = []
+    y = []
+    get_cards(X, y)
+
+    sample = 5
+    weights = np.ones((3, X[sample].size))
+    X = X[sample].reshape(X[sample].size)
+    Y = y[sample]
+
+    loss_op = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
+    optimizer = tf.train.AdamOptimizer(learning_rate=1e-2)
+    train_op = optimizer.minimize(loss_op)
+
 
 def fit():
     X = []
     y = []
     get_cards(X, y)
 
+    filter_size = (5, 5)
+    padding = 4
+    stride = 2
+
     steps = [
-        ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='random', activation=Relu),
+        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=5, x0='random',
+                          activation=Relu),
         MaxPoolingStep(3),
-        ConvolutionalStep(filter_size=(3, 3), num_of_kernels=5, x0='random', activation=Relu),
-        MaxPoolingStep(3),
-        ConvolutionalStep(filter_size=(3, 3), num_of_kernels=2, x0='random', activation=Relu),
-        MaxPoolingStep(3),
+        # ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=12, x0='random',
+        #                   activation=Relu),
+        # MaxPoolingStep(3),
+        # ConvolutionalStep(filter_size=(3, 3), stride=3, num_of_kernels=3, x0='random', activation=Relu),
+        # MaxPoolingStep(2),
         # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=6, x0='random', activation=Relu),
         # MaxPoolingStep(3),
-        # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=5, x0='random', activation=Relu),
+        # ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=4, x0='random', activation=Relu),
         # MaxPoolingStep(3),
         Flatten(),
         OutputStep(x0='random', activation=Softmax)
@@ -89,9 +199,47 @@ def fit():
     # network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
 
     # network.load('network.b')
-    # network.fit([X[2]], [y[2]], MeanSquared, iterations=1000, batch_size=32, learning_rate=0.1)
-    network.fit(X, y, MeanSquared, iterations=10, batch_size=len(X), learning_rate=0.001)
+    sample = 5
+    network.fit(
+        [X[sample]], [y[sample]],
+        # X, y,
+        CrossEntropyLogisticRegression,
+        iterations=100,
+        batch_size=len(X),
+        learning_rate=1e-2,
+        verbose=True,
+
+    )
+    # print("start fit")
+    # network.fit(X, y, MeanSquared, iterations=15, batch_size=int(len(X)), learning_rate=0.00001)
+    # network.save('network.b')
     # network.save('network.b')
 
-fit()
 
+def get_biggets_sizes():
+    height = width = 0
+    for category, tag in categories.items():
+        file_names = os.listdir(os.path.join(cards_dir, category))
+
+        for index, image_path in enumerate(file_names[0:900]):
+            image_path = os.path.join(cards_dir, category, image_path)
+            image = Image.open(image_path)
+
+            if image.size[1] > height:
+                height = image.size[1]
+
+            if image.size[0] > width:
+                width = image.size[0]
+
+    print(f"{height}, {width}")
+    print(f"Ratio {width/height}")
+    size = 150
+    print(f"if height: {size} then width is {size*(width/height)}")
+
+
+if __name__ == '__main__':
+    # get_biggets_sizes()
+    fit()
+    # tensorflow_fit()
+    # keras_fit()
+    # validate()

@@ -20,27 +20,34 @@ class OutputStep(StepWithFilters):
 
     def back_prop(self, delta, leraning_rate):
         delta = delta * self.activation.back_propagation(self.z)
+        # print(f"delta: {delta}")
+
         # errors = np.sum((np.array(self.filters).transpose() * delta), axis=1)
         errors = np.zeros(len(self.inputs))
         # print(f"error: {errors}")
 
         # self.filters += errors * self.inputs.transpose() * leraning_rate
         for i, filter in enumerate(self.filters):
-            error = filter * delta[i]
+            # error = filter * delta[i]
+            error = delta[i] * self.inputs #* -1 # NO IDEA WHY IT IS WORKING WITH -1
 
             # SHOULD BE + SIGN
             # but it dont really working for softmax, so i changed it -
-            filter -= error * leraning_rate * self.inputs
 
-            errors += error
+            filter += error * leraning_rate #* filter
 
-        print(f"inputs: {self.inputs.reshape(self.inputs.size)[: 10]}")
-        print(f"z: {self.z}")
-        print(f"a: {self.a}")
-        print(f"delta: {delta}")
-        after_z = np.array([self.inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
-        print(f"z after: {after_z}")
-        print(f"a after: {self.activation.forward_propagation(after_z)}")
+            # filter += error * leraning_rate #* self.inputs
+            # filter += np.sum(error * self.inputs) * leraning_rate
+
+            errors += error #* filter
+        #
+        # print(f"inputs: {self.inputs.reshape(self.inputs.size)[: 10]}")
+        # print(f"z: {self.z}")
+        # print(f"a: {self.a}")
+        # print(f"delta: {delta}")
+        # after_z = np.array([self.inputs.dot(neuron_weights.T) for neuron_weights in self.filters])
+        # print(f"z after: {after_z}")
+        # print(f"a after: {self.activation.forward_propagation(after_z)}")
 
         # return errors[1 if self.use_bias else 0:]
 

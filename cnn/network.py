@@ -20,15 +20,16 @@ class CnnNetwork(object):
         return index, value
 
     def forward_propagation(self, input):
-        data = self.__to_3d_shape(np.array(input))
+        data = self.to_3d_shape(np.array(input))
         for step in self.steps:
             data = step.forward_propagation(data)
 
         return data
 
-    def fit(self, X, y, cost_function, learning_rate=0.001, iterations=1000, batch_size=32, random=True,
+    def fit(self, X, y, cost_function, learning_rate=0.001, iterations=1000, batch_size=32, random=True, verbose=False,
             test_portion=0):
         self.__validate_input(X, y)
+        self.verbose = verbose
 
         self.compile(X, y)
         self.__back_propogation(X, y, cost_function, learning_rate, iterations, batch_size)
@@ -64,14 +65,14 @@ class CnnNetwork(object):
     def __back_propogation(self, X, y, cost_function, learning_rate, iterations, batch_size):
         history = History()
 
-        inputs = [self.__to_3d_shape(np.array(x)) for x in X]
+        inputs = [self.to_3d_shape(np.array(x)) for x in X]
         tags = list(self.__to_categories(y))
         input_with_tag = list(zip(inputs, tags))
 
         for iteration in range(iterations):
-            print("---------")
-            print(f"Iteration {iteration}")
-            print("---------")
+            self.log("---------")
+            self.log(f"Iteration {iteration}")
+            self.log("---------")
 
             shuffle(input_with_tag)
             batch = input_with_tag if batch_size == -1 else input_with_tag[0:batch_size]
@@ -84,31 +85,30 @@ class CnnNetwork(object):
                     data = step.forward_propagation(data)
                     # print(f"data after {step.__class__.__name__}: {data[0:10]}")
 
-                # history.costs.append(np.sum(cost))
-
-                print(f"output : {data}")
-                print(f"y: {batch_tag}")
+                self.log(f"output : {data}")
+                self.log(f"y: {batch_tag}")
                 cost = cost_function.cost(batch_tag, data)
-                print(f"cost: {cost}")
-                print(f"cost sum: {np.sum(cost)}")
+                history.costs.append(cost)
+                self.log(f"cost: {cost}")
 
                 delta = cost_function.derivative(batch_tag, data)  # * step.activation.derivative(step.inputs)
 
                 # print("Backprop")
                 for i, step in enumerate(reversed(self.steps)):
-                    # print(step.__class__.__name__)
                     delta = step.back_prop(delta, learning_rate)
 
+                print(f'--- {batch_index}/{len(batch)} ({iteration})---')
 
-                print(f'--- {batch_index}/{len(batch)} ---')
+                if (batch_index + 1) % 500 == 0:
+                    self.save(f"pokemon-cards.b")
 
-                # if batch_index%30 == 0:
-                #     self.save(f"network.b")
+            # self.save(f'pokemon-cards.b')
 
-            self.save(f'pokemon-cards.network.sride.{learning_rate}.b')
+        with open('costs.json', 'w') as costs_file:
+            json.dump(history.costs, costs_file)
 
-            # with open('costs.json', 'w') as costs_file:
-            #     json.dump(history.costs, costs_file)
+        self.save(f"pokemon-cards.b")
+        self.log(f"cost: {cost}")
 
     def __validate_input(self, X, y):
         num_of_samples = np.array(X).shape[0]
@@ -117,5 +117,9 @@ class CnnNetwork(object):
         if num_of_samples != num_of_tagging:
             raise BadInputException(f"Wrong number of samples and tagged data (X={num_of_samples}, y={num_of_tagging})")
 
-    def __to_3d_shape(self, input):
+    def log(self, message):
+        if self.verbose:
+            print(message)
+
+    def to_3d_shape(self, input):
         return np.reshape(input, (1,) * (3 - len(input.shape)) + input.shape)

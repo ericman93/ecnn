@@ -95,6 +95,7 @@ class CnnNetwork(object):
 
                 # print("Backprop")
                 for i, step in enumerate(reversed(self.steps)):
+                    # print(f"DELTA: {np.sum(delta)}")
                     delta = step.back_prop(delta, learning_rate)
 
                 print(f'--- {batch_index}/{len(batch)} ({iteration})---')

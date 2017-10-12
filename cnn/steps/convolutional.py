@@ -23,19 +23,12 @@ class ConvolutionalStep(StepWithFilters):
 
         self.stride = stride
 
-    def conv_backprop(self, inputs, filter, stride):
-        feature_height, feature_widht = filter.shape[-2], filter.shape[-1]
+    def conv_backprop2(self, delta, stride):
+        filter_shape = self.filters[0].shape
+        final = np.zeros((filter_shape [-2], filter_shape [-1]))
 
-        if filter.shape[-1] >= inputs.shape[-1] or filter.shape[-2] >= inputs.shape[-2]:
-            inputs = self.__add_padding(inputs, (feature_height - 1, feature_widht - 1))
-
-        input_height, input_width = inputs.shape[-2], inputs.shape[-1]
-        # final = np.zeros((1, input_height, input_width))
-        final = np.zeros((
-            1,
-            int((input_height - feature_height + 1) / stride),
-            int((input_width - feature_widht + 1) / stride)
-        ))
+        input_height, input_width = self.inputs.shape[-2], self.inputs.shape[-1]
+        feature_height, feature_widht = delta.shape[-2], delta.shape[-1]
 
         for i in range(0, input_height, stride):
             row = []
@@ -46,12 +39,47 @@ class ConvolutionalStep(StepWithFilters):
                 if j + feature_widht > input_width:
                     continue
 
-                bulk = inputs[:, i: i + feature_height, j: j + feature_widht]
-                final[:, i, j] = np.sum(bulk * filter)
-                a = 2
-                # final[:, i: i + feature_height, j: j + feature_widht] += bulk * filter
+                bulk = self.inputs[:, i: i + feature_height, j: j + feature_widht]
+                final[i, j] = np.sum(bulk * delta)
 
         return np.array(final)
+
+
+    def conv_backprop(self, inputs, filter, stride):
+        feature_height, feature_widht = filter.shape[-2], filter.shape[-1]
+
+        # b = np.zeros((inputs))
+        # if stride != 1:
+        #     a = 2
+
+        # if filter.shape[-1] >= inputs.shape[-1] or filter.shape[-2] >= inputs.shape[-2]:
+        # inputs = self.__add_padding(inputs, (feature_height - 1, feature_widht - 1))
+        # inputs = self.__add_padding(inputs, (1,1))
+
+        input_height, input_width = inputs.shape[-2], inputs.shape[-1]
+        final = np.zeros((self.inputs.shape[-2], self.inputs.shape[-1]))
+        # final = np.zeros((
+        #     1,
+        #     int((input_height - feature_height + 1) / stride),
+        #     int((input_width - feature_widht + 1) / stride),
+        # ))
+
+        for i in range(0, input_height, stride):
+            row = []
+            if i + feature_height > input_height:
+                continue
+
+            for j in range(0, input_width, stride):
+                if j + feature_widht > input_width:
+                    continue
+
+                bulk = inputs[i: i + feature_height, j: j + feature_widht]
+                final[i, j] = np.sum(bulk * filter)
+
+                # final[:, i: i + feature_height, j: j + feature_widht] += bulk * filter
+
+        # return np.array(final)
+        return np.tile(final, (self.inputs.shape[0], 1, 1))
 
     def convolution(self, a, filter, stride):
         feature_height, feature_widht = filter.shape[-2], filter.shape[-1]
@@ -74,7 +102,7 @@ class ConvolutionalStep(StepWithFilters):
 
     def back_prop(self, delta, leraning_rate):
         # print("start")
-        errors = np.zeros(self.inputs.shape)
+        errors = []
 
         # this is the same as doing
         # np.dot(self.filters.trasnpose(), delta)
@@ -82,6 +110,9 @@ class ConvolutionalStep(StepWithFilters):
         # OR IS IT?
 
         delta = delta * self.activation.back_propagation(self.z)
+
+        max_delta = np.max(delta)
+        delta = delta / max_delta if max_delta != 0 else delta
         # bulks = self.__get_sub_arrays(self.inputs, self.stride, (self.filters[0].shape[-2], self.filters[0].shape[-1]))
 
         for filter_index, filter in enumerate(self.filters):
@@ -111,13 +142,22 @@ class ConvolutionalStep(StepWithFilters):
 
             # error = np.zeros(self.inputs.shape)
 
-            error = self.conv_backprop(filter, delta[filter_index].transpose(), self.stride)
+            # error = self.conv_backprop(delta[filter_index].transpose(), filter, self.stride)
+
+            # error = np.dot(self.inputs.transpose(), self.conv_backprop(delta[filter_index], filter, self.stride))
+            # error = self.conv_backprop(delta[filter_index].transpose(), filter, self.stride) * self.inputs
+            # error = self.conv_backprop(delta[filter_index], filter, self.stride) * self.inputs
+
             # error = self.conv_backprop(self.inputs, delta[filter_index].transpose(), self.stride)
-            errors += error * self.inputs
+            # errors.append(error * leraning_rate)
+            # filter += np.sum(error) * leraning_rate
 
-            filter += np.average(error) * leraning_rate
+            error = self.conv_backprop2(delta[filter_index], self.stride)
+            errors.append(error)
+            filter += np.sum(error) * leraning_rate
 
-        return errors
+
+        return np.stack(errors, axis=0)
 
     def calc_neurons_values(self, input):
         self.inputs = input

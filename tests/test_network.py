@@ -5,9 +5,15 @@ from cnn.steps import ReluActivation
 from cnn.steps import MaxPoolingStep
 from cnn.steps import OutputStep
 from cnn.network import CnnNetwork
+from cnn.steps.core import Flatten
+from cnn.steps.activation import Softmax
 from cnn.steps.activation import Sigmoid
 from cnn.steps.activation import Relu
+from cnn.steps.activation import Tanh
+from cnn.steps.activation import Linear
 from cnn.cost_functions import MeanSquared
+from cnn.cost_functions import CrossEntropyLogisticRegression
+from cnn.cost_functions import CrossEntropy
 from cnn.exceptions import BadInputException
 
 
@@ -153,14 +159,18 @@ class TestBackPropogationNetwork(unittest.TestCase):
     def test_with_pooling(self):
         # arrange
         steps = [
-            ConvolutionalStep(filter_size=(2, 2), num_of_kernels=2, x0='random', activation=Relu),
-            MaxPoolingStep(2),
+            ConvolutionalStep(filter_size=(2, 2), stride=2, num_of_kernels=1, x0='random', activation=Tanh),
+            # MaxPoolingStep(3),
+            # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='ones', activation=Tanh),
+            # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=3, x0='ones', activation=Tanh),
+            # MaxPoolingStep(3),
+            Flatten(),
             OutputStep(x0='random', activation=Sigmoid)
         ]
         network = CnnNetwork(steps)
-        X = [
+        X = np.array([
             [
-                [1, 2, 3, 4]
+                [1, 2, 3, 4],
                 [5, 6, 7, 8],
                 [9, 10, 11, 12],
                 [13, 14, 15, 16]
@@ -171,8 +181,61 @@ class TestBackPropogationNetwork(unittest.TestCase):
                 [1, 2, 3, 4],
                 [9, 10, 11, 12],
             ]
-        ]
+        ])
         y = [0, 1]
 
         # act
-        network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
+        network.fit(X, y, MeanSquared, iterations=1, batch_size=1)
+
+    def test_small_network(self):
+        # arrange
+        steps = [
+            ConvolutionalStep(filter_size=(2, 2), stride=1, num_of_kernels=1, x0='random', activation=Relu),
+            # MaxPoolingStep(3),
+            # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=1, x0='ones', activation=Tanh),
+            # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=3, x0='ones', activation=Tanh),
+            # MaxPoolingStep(3),
+            Flatten(),
+            OutputStep(x0='random', activation=Softmax)
+        ]
+        network = CnnNetwork(steps)
+        X = np.array([[
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9]
+        ]])
+        y = [1]
+
+        # act
+        network.fit(X, y, CrossEntropyLogisticRegression, iterations=20, batch_size=1, verbose=True, learning_rate=0.01)
+
+    def test_small_network_with_stide(self):
+        # arrange
+        x0 = 'random'
+        steps = [
+            ConvolutionalStep(filter_size=(2, 2), stride=1, num_of_kernels=5, x0=x0, activation=Relu),
+            MaxPoolingStep(3),
+            # ConvolutionalStep(filter_size=(2, 2), num_of_kernels=10, x0=x0, activation=Tanh),
+            # MaxPoolingStep(3),
+            # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=3, x0='ones', activation=Tanh),
+            Flatten(),
+            OutputStep(x0=x0, activation=Softmax)
+        ]
+        network = CnnNetwork(steps)
+        X = np.array([[
+            [
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+            ],[
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+                [1, 2, 3, 4, 5, 6],
+            ]
+        ]])
+        y = [2]
+
+        # act
+        network.fit(X, y, CrossEntropy, iterations=10, batch_size=1, verbose=True, learning_rate=0.001)

@@ -11,14 +11,16 @@ class OutputStep(StepWithFilters):
         self.x0 = x0
         self.activation = activation
         self.use_bias = use_bias
-        #
+
         self.classes = None
 
     def compile(self, X, y):
-        self.classes = list([0,1,2])
+        self.classes = list([0, 1, 2])
         # self.classes = list(set(y))
 
     def back_prop(self, delta, leraning_rate):
+        # print(f"DELTA: {delta}")
+        # print(f"Z bcak: {self.activation.back_propagation(self.z)}")
         delta = delta * self.activation.back_propagation(self.z)
         # print(f"delta: {delta}")
 
@@ -29,17 +31,17 @@ class OutputStep(StepWithFilters):
         # self.filters += errors * self.inputs.transpose() * leraning_rate
         for i, filter in enumerate(self.filters):
             # error = filter * delta[i]
-            error = delta[i] * self.inputs #* -1 # NO IDEA WHY IT IS WORKING WITH -1
+            error = np.dot(delta[i], self.inputs.transpose()) #* -1 # NO IDEA WHY IT IS WORKING WITH -1
 
             # SHOULD BE + SIGN
             # but it dont really working for softmax, so i changed it -
 
-            filter += error * leraning_rate #* filter
+            filter += error * leraning_rate  # * filter
 
             # filter += error * leraning_rate #* self.inputs
             # filter += np.sum(error * self.inputs) * leraning_rate
 
-            errors += error #* filter
+            errors += error  # * filter
         #
         # print(f"inputs: {self.inputs.reshape(self.inputs.size)[: 10]}")
         # print(f"z: {self.z}")

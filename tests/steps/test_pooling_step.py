@@ -92,3 +92,26 @@ class PoolingActivationTests(unittest.TestCase):
         # assert
         self.assertEqual(len(expected_z), len(pooling.z))
         self.assertEquals(expected_z, pooling.z)
+
+    def test_pooling_back_drop(self):
+        # arrange
+        error = 6
+        inputs = np.array([[
+            [7, 8],
+            [0, 2]
+        ]])
+        expected = np.array([[
+            [0, error],
+            [0, 0]
+        ]])
+
+        pooling = MaxPoolingStep(2)
+        output = pooling.forward_propagation(inputs)
+
+        # act
+        backdrop = pooling.back_prop(np.array([error]), None)
+
+        # assert
+        self.assertEqual(expected.shape, backdrop.shape)
+        self.assertTrue(all(np.equal(expected.reshape(expected.size), output.reshape(backdrop.size))))
+

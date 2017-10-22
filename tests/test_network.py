@@ -185,7 +185,7 @@ class TestBackPropogationNetwork(unittest.TestCase):
         y = [0, 1]
 
         # act
-        network.fit(X, y, MeanSquared, iterations=1, batch_size=1)
+        network.fit(X, y, MeanSquared, iterations=1, batch_size=1, learning_rate=1e-2)
 
     def test_small_network(self):
         # arrange
@@ -207,15 +207,15 @@ class TestBackPropogationNetwork(unittest.TestCase):
         y = [1]
 
         # act
-        network.fit(X, y, CrossEntropyLogisticRegression, iterations=20, batch_size=1, verbose=True, learning_rate=0.01)
+        network.fit(X, y, CrossEntropyLogisticRegression, iterations=25, batch_size=1, verbose=True, learning_rate=1e-3)
 
     def test_small_network_with_stide(self):
         # arrange
         x0 = 'random'
         steps = [
             ConvolutionalStep(filter_size=(2, 2), stride=1, num_of_kernels=5, x0=x0, activation=Relu),
-            MaxPoolingStep(3),
-            # ConvolutionalStep(filter_size=(2, 2), num_of_kernels=10, x0=x0, activation=Tanh),
+            # MaxPoolingStep(3),
+            ConvolutionalStep(filter_size=(2, 2), num_of_kernels=10, x0=x0, activation=Tanh),
             # MaxPoolingStep(3),
             # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=3, x0='ones', activation=Tanh),
             Flatten(),

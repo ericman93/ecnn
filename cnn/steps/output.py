@@ -21,7 +21,11 @@ class OutputStep(StepWithFilters):
     def back_prop(self, delta, leraning_rate):
         # print(f"DELTA: {delta}")
         # print(f"Z bcak: {self.activation.back_propagation(self.z)}")
-        delta = delta * self.activation.back_propagation(self.z)
+
+        # print(f"b delta: {delta}")
+        # delta = delta * self.activation.back_propagation(self.z)
+        # print(f"a delta: {delta}")
+
         # print(f"delta: {delta}")
 
         # errors = np.sum((np.array(self.filters).transpose() * delta), axis=1)
@@ -31,12 +35,13 @@ class OutputStep(StepWithFilters):
         # self.filters += errors * self.inputs.transpose() * leraning_rate
         for i, filter in enumerate(self.filters):
             # error = filter * delta[i]
-            error = np.dot(delta[i], self.inputs.transpose()) #* -1 # NO IDEA WHY IT IS WORKING WITH -1
+            # error = np.dot(delta[i], self.inputs.transpose()) #* -1 # NO IDEA WHY IT IS WORKING WITH -1
 
-            # SHOULD BE + SIGN
-            # but it dont really working for softmax, so i changed it -
+            # error = np.dot(filter.transpose(), delta[i])
+            error = delta[i]
+            # error = np.dot(delta[i], self.inputs.transpose())
 
-            filter += error * leraning_rate  # * filter
+            filter += np.dot(error, self.inputs.transpose()) * leraning_rate  # * filter
 
             # filter += error * leraning_rate #* self.inputs
             # filter += np.sum(error * self.inputs) * leraning_rate

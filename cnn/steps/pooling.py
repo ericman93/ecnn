@@ -19,6 +19,8 @@ class PoolingStep(BasicStep):
         delta_i = 0
         final_delta = []
 
+        bb = [1 for a in self.z.reshape(self.z.size) if a == 1]
+
         for p in self.z.reshape(self.z.size):
             if p == 1:
                 final_delta.append(flatten_delta[delta_i])

@@ -15,12 +15,14 @@ from cnn.steps.activation import Tanh
 from cnn.steps.activation import Softmax
 from cnn.cost_functions import MeanSquared
 from cnn.cost_functions import CrossEntropyLogisticRegression
+from cnn.cost_functions import CrossEntropy
 
 from tensorflow.python import debug as tf_debug
 
 cards_dir = '/home/eric/dev/pokemon/cards/'
 categories = {'trainer': 0, 'pokemon': 1, 'energy': 2}
 image_size = (150, 110)
+# image_size = (150, 150)
 
 
 def save_steps(inputs, network):
@@ -79,7 +81,8 @@ def get_cards(X, y):
         category_x = []
         category_y = []
 
-        for index, image_path in enumerate(file_names[0:10]):
+        # change to 900
+        for index, image_path in enumerate(file_names[0:900]):
             # for index, image_path in enumerate(file_names):
             image_path = os.path.join(cards_dir, category, image_path)
 
@@ -90,9 +93,10 @@ def get_cards(X, y):
 
         # When taking 900 pictures
         if category == 'energy':
-            category_x = category_x * 7
+            category_x = category_x * 7 # change to 7 if 900
             category_y = category_y * 7
 
+        # if tag == 2:
         X += category_x
         y += category_y
 
@@ -107,24 +111,26 @@ def validate(save=False):
 
     file_names = os.listdir(dir)
     for file_name in file_names:
+        if '.' not in file_name:
+            continue
+
         image_path = os.path.join(dir, file_name)
 
         image_matrix = get_image_matrix(image_path, image_size)
 
-        if save and file_name == 'p2.jpg':
+        if save and file_name == 'tutu.png':
             save_steps(image_matrix, network)
-        else:
-            # continue
-            # print('--')
-            predictions = network.forward_propagation(image_matrix)
-            # print(predictions)
-            predicted_class, score = network.predict(image_matrix)
-            class_name = [name for name, value in categories.items() if value == predicted_class][0]
 
-            print(f"{file_name} - {class_name} ({predictions})")
-            # print('--')
-            # card_type = [k for k,v in categories.items() if v == prediction[0]][0]
-            # print(f"{file_name} is a {card_type} ({prediction[1]})")
+         # print('--')
+        predictions = network.forward_propagation(image_matrix)
+        # print(predictions)
+        predicted_class, score = network.predict(image_matrix)
+        class_name = [name for name, value in categories.items() if value == predicted_class][0]
+
+        print(f"{file_name} - {class_name} ({predictions})")
+        # print('--')
+        # card_type = [k for k,v in categories.items() if v == prediction[0]][0]
+        # print(f"{file_name} is a {card_type} ({prediction[1]})")
 
 
 def keras_fit():
@@ -174,17 +180,18 @@ def fit():
     y = []
     get_cards(X, y)
 
-    filter_size = (5, 5)
-    padding = 4
-    stride = 2
+    filter_size = (6, 6)
+    padding = 0
+    stride = 1
+    x0 = 'random'
 
     steps = [
-        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=5, x0='random',
+        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=3, x0=x0,
                           activation=Relu),
         MaxPoolingStep(3),
-        # ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=12, x0='random',
-        #                   activation=Relu),
-        # MaxPoolingStep(3),
+        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=7, x0=x0,
+                          activation=Relu),
+        MaxPoolingStep(3),
         # ConvolutionalStep(filter_size=(3, 3), stride=3, num_of_kernels=3, x0='random', activation=Relu),
         # MaxPoolingStep(2),
         # ConvolutionalStep(filter_size=(3, 3), num_of_kernels=6, x0='random', activation=Relu),
@@ -192,22 +199,24 @@ def fit():
         # ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=4, x0='random', activation=Relu),
         # MaxPoolingStep(3),
         Flatten(),
-        OutputStep(x0='random', activation=Softmax)
+        OutputStep(x0=x0, activation=Softmax)
     ]
 
     network = CnnNetwork(steps)
+    # TODO: Load previews model for re-learning
+
     # network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
 
     # network.load('network.b')
-    sample = 5
+    sample = 4
     network.fit(
-        [X[sample]], [y[sample]],
-        # X, y,
-        CrossEntropyLogisticRegression,
+        # [X[sample]], [y[sample]],
+        X, y,
+        CrossEntropy,
         iterations=100,
         batch_size=len(X),
-        learning_rate=1e-2,
-        verbose=True,
+        learning_rate=1e-4,
+        verbose=1,
 
     )
     # print("start fit")
@@ -239,7 +248,7 @@ def get_biggets_sizes():
 
 if __name__ == '__main__':
     # get_biggets_sizes()
-    fit()
+    # fit()
     # tensorflow_fit()
     # keras_fit()
-    # validate()
+    validate(save=False)

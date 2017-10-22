@@ -98,9 +98,10 @@ class SoftmaxActivation(BasicActiviation):
                 else:
                     gradients[i] += -value * input
 
-        # return np.array(gradients)
-        max_grad = max(gradients)
-        return (np.array(gradients) / max_grad) if max_grad != 0 else np.array(gradients)
+        return np.array(gradients)
+
+        # max_grad = max(gradients)
+        # return (np.array(gradients) / max_grad) if max_grad != 0 else np.array(gradients)
 
     def __signal(self, inputs):
         exps = np.exp(inputs - np.max(inputs))

@@ -70,9 +70,9 @@ class CnnNetwork(object):
         input_with_tag = list(zip(inputs, tags))
 
         for iteration in range(iterations):
-            self.log("---------")
-            self.log(f"Iteration {iteration}")
-            self.log("---------")
+            self.log("---------", 1)
+            self.log(f"Iteration {iteration}", 1)
+            self.log("---------", 1)
 
             shuffle(input_with_tag)
             batch = input_with_tag if batch_size == -1 else input_with_tag[0:batch_size]
@@ -83,33 +83,31 @@ class CnnNetwork(object):
 
                 for step in self.steps:
                     data = step.forward_propagation(data)
-                    # print(f"data after {step.__class__.__name__}: {data[0:10]}")
+                    # print(f"data after {step.__class__.__name__}: {data.shape}")
 
-                self.log(f"output : {data}")
-                self.log(f"y: {batch_tag}")
+                self.log(f"output : {data}", 1)
+                self.log(f"y: {batch_tag}", 1)
                 cost = cost_function.cost(batch_tag, data)
                 history.costs.append(cost)
-                self.log(f"cost: {cost}")
+                self.log(f"cost: {cost}", 1)
 
                 delta = cost_function.derivative(batch_tag, data)  # * step.activation.derivative(step.inputs)
 
                 # print("Backprop")
                 for i, step in enumerate(reversed(self.steps)):
-                    # print(f"DELTA: {np.sum(delta)}")
                     delta = step.back_prop(delta, learning_rate)
+                    self.log(f"{step.__class__.__name__} - MAX: {np.max(delta)} - MIN: {np.min(delta)}", 2)
 
                 print(f'--- {batch_index}/{len(batch)} ({iteration})---')
 
-                if (batch_index + 1) % 500 == 0:
-                    self.save(f"pokemon-cards.b")
+            self.save(f"pokemon-cards.b")
 
-            # self.save(f'pokemon-cards.b')
 
         with open('costs.json', 'w') as costs_file:
             json.dump(history.costs, costs_file)
 
         self.save(f"pokemon-cards.b")
-        self.log(f"cost: {cost}")
+        self.log(f"cost: {cost}", 1)
 
     def __validate_input(self, X, y):
         num_of_samples = np.array(X).shape[0]
@@ -118,8 +116,8 @@ class CnnNetwork(object):
         if num_of_samples != num_of_tagging:
             raise BadInputException(f"Wrong number of samples and tagged data (X={num_of_samples}, y={num_of_tagging})")
 
-    def log(self, message):
-        if self.verbose:
+    def log(self, message, level):
+        if self.verbose >= level:
             print(message)
 
     def to_3d_shape(self, input):

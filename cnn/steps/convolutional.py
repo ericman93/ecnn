@@ -158,10 +158,9 @@ class ConvolutionalStep(StepWithFilters):
             filter_delta = self.conv_backprop_delta(delta[filter_index], filter, self.stride)
             errors.append(filter_delta)
 
-            #TODO: BUG! delta is bigger then input!!!
-            #TODO: But conv backprop can use the same method, the only differenct is that conv_backprop_features using self.inputs and the bigger paltn
-            # error = self.conv_backprop_features(delta[filter_index], self.stride)
-            error = self.conv_backprop_features(filter_delta, self.stride)
+
+            error = self.conv_backprop_features(delta[filter_index], self.stride)
+            # error = self.conv_backprop_features(filter_delta, self.stride)
             filter += (error * leraning_rate)
             # errors.append(self.conv_backprop(self.inputs, filter.transpose(), self.stride))
 

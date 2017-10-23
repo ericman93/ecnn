@@ -31,7 +31,7 @@ class CnnNetwork(object):
         self.__validate_input(X, y)
         self.verbose = verbose
 
-        self.compile(X, y)
+        # self.compile(X, y)
         self.__back_propogation(X, y, cost_function, learning_rate, iterations, batch_size)
 
     def save(self, file_path):
@@ -100,8 +100,10 @@ class CnnNetwork(object):
 
                 print(f'--- {batch_index}/{len(batch)} ({iteration})---')
 
-            self.save(f"pokemon-cards.b")
+                if (batch_index + 1) % 500 == 0:
+                    self.save(f"pokemon-cards.b")
 
+            self.save(f"pokemon-cards.b")
 
         with open('costs.json', 'w') as costs_file:
             json.dump(history.costs, costs_file)

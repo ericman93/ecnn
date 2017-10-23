@@ -101,13 +101,13 @@ def get_cards(X, y):
         y += category_y
 
 
-def validate(save=False):
+def validate(save=None):
     network = CnnNetwork([])
     network.load('pokemon-cards.b')
     # network.load('network.b')
 
     # dir = os.path.join(cards_dir, 'test')
-    dir = 'validation'
+    dir = 'validation/v2'
 
     file_names = os.listdir(dir)
     for file_name in file_names:
@@ -118,7 +118,7 @@ def validate(save=False):
 
         image_matrix = get_image_matrix(image_path, image_size)
 
-        if save and file_name == 'tutu.png':
+        if save and file_name == save:
             save_steps(image_matrix, network)
 
          # print('--')
@@ -186,7 +186,7 @@ def fit():
     x0 = 'random'
 
     steps = [
-        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=3, x0=x0,
+        ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=4, x0=x0,
                           activation=Relu),
         MaxPoolingStep(3),
         ConvolutionalStep(filter_size=filter_size, padding=padding, stride=stride, num_of_kernels=7, x0=x0,
@@ -202,8 +202,9 @@ def fit():
         OutputStep(x0=x0, activation=Softmax)
     ]
 
-    network = CnnNetwork(steps)
-    # TODO: Load previews model for re-learning
+    # network = CnnNetwork(steps)
+    network = CnnNetwork([])
+    network.load('pokemon-cards.b')
 
     # network.fit(X, y, MeanSquared, iterations=1000, batch_size=32)
 
@@ -215,7 +216,7 @@ def fit():
         CrossEntropy,
         iterations=100,
         batch_size=len(X),
-        learning_rate=1e-4,
+        learning_rate=1e-5,
         verbose=1,
 
     )
@@ -248,7 +249,7 @@ def get_biggets_sizes():
 
 if __name__ == '__main__':
     # get_biggets_sizes()
-    # fit()
+    fit()
     # tensorflow_fit()
     # keras_fit()
-    validate(save=False)
+    # validate(save='p2.jpg')

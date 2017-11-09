@@ -17,6 +17,11 @@ class ConvolutionalStep(StepWithFilters):
 
         self.stride = stride
 
+    # ~~~~~
+    #TODO: All the convolution functions are doing the same thing.
+    # use only of them and delete the rest
+    # ~~~~~
+
     def conv_backprop_features(self, delta, stride):
         filter_shape = self.filters[0].shape
         final = np.zeros((filter_shape[-2], filter_shape[-1]))
@@ -36,7 +41,7 @@ class ConvolutionalStep(StepWithFilters):
                     continue
 
                 bulk = padded_input[:, i: i + feature_height, j: j + feature_widht]
-                final[int(i/stride), int(j/stride)] = np.sum(bulk * delta)
+                final[int(i / stride), int(j / stride)] = np.sum(bulk * delta)
 
         return np.array(final)
 
@@ -60,7 +65,6 @@ class ConvolutionalStep(StepWithFilters):
 
         return np.tile(final, (self.inputs.shape[0], 1, 1))
 
-
     def convolution(self, a, filter, stride):
         feature_height, feature_widht = filter.shape[-2], filter.shape[-1]
 
@@ -68,7 +72,6 @@ class ConvolutionalStep(StepWithFilters):
             a = self.__add_padding(a, (feature_height - 1, feature_widht - 1))
 
         features_sum_of_products = []
-
 
         weights = self.__get_sub_arrays(a, stride, (feature_height, feature_widht))
         features_sum_of_products = [[self.get_bulk_sum_of_products(bulk, filter) for bulk in row] for row in weights]
@@ -82,7 +85,6 @@ class ConvolutionalStep(StepWithFilters):
         for filter_index, filter in enumerate(self.filters):
             filter_delta = self.conv_backprop_delta(delta[filter_index], filter, self.stride)
             errors.append(filter_delta)
-
 
             error = self.conv_backprop_features(delta[filter_index], self.stride)
             filter += (error * leraning_rate)

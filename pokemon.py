@@ -16,8 +16,6 @@ from cnn.cost_functions import MeanSquared
 from cnn.cost_functions import CrossEntropyLogisticRegression
 from cnn.cost_functions import CrossEntropy
 
-from tensorflow.python import debug as tf_debug
-
 cards_dir = '.'
 categories = {'trainer': 0, 'pokemon': 1, 'energy': 2}
 image_size = (150, 110)

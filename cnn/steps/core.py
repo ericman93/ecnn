@@ -10,7 +10,4 @@ class Flatten(BasicStep):
         return inputs.reshape(inputs.size)
 
     def back_prop(self, delta, learning_rate):
-        # return np.sum(delta.reshape(self.inputs.shape), axis=(1,2))
-
         return delta.reshape(self.inputs.shape)
-        # return delta

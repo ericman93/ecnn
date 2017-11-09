@@ -32,9 +32,6 @@ class LinearActivation(BasicActiviation):
 
 
 class ReluActivation(BasicActiviation):
-    # def forward_propagation(self, inputs):
-    #     inputs[inputs<0: 0]
-
     def activation(self, value):
         return max(0, value)
 
@@ -63,31 +60,11 @@ class SigmoidActivation(BasicActiviation):
 
 class SoftmaxActivation(BasicActiviation):
     def forward_propagation(self, inputs):
-        # print(f"z: {inputs}")
-        # max_value = 500
-        # normalized = [min(i, max_value) if i > 0 else max(i, max_value * -1) for i in inputs]
-        # print(f"normalized: {normalized}")
-
         self.inputs = inputs
         self.values = self.__signal(inputs)
         return self.values
-        # max_value = 500
-        #
-        # normalized = [min(i, max_value) if i > 0 else max(i, max_value * -1) for i in inputs]
-        # exps = np.exp(normalized)
-        # # print(f"softmax {inputs}")
-        # # exps = np.exp(inputs)
-        #
-        # self.inputs = inputs
-        # self.values = exps / np.sum(exps, axis=0)
-        #
-        # return self.values
 
     def back_propagation(self, inputs):
-        # SM = self.values.reshape((-1, 1))
-        # jac = np.diag(self.values) - np.dot(SM, SM.T)
-        # return np.sum(jac, axis=1)
-
         gradients = [0] * len(self.values)
 
         for i, value in enumerate(self.values):
@@ -99,9 +76,6 @@ class SoftmaxActivation(BasicActiviation):
                     gradients[i] += -value * input
 
         return np.array(gradients)
-
-        # max_grad = max(gradients)
-        # return (np.array(gradients) / max_grad) if max_grad != 0 else np.array(gradients)
 
     def __signal(self, inputs):
         exps = np.exp(inputs - np.max(inputs))

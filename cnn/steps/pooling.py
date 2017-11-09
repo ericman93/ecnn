@@ -50,10 +50,6 @@ class PoolingStep(BasicStep):
                     pooled = self.pool(bulk)
                     row.append(pooled)
 
-                    # If two values have the pooled value, two of them will mark as 1
-                    # pooled_bulk = [1 if v == pooled else 0 for v in set(bulk.reshape(bulk.size))]
-                    # pooled_bulk += [0] * (self.size * self.size - len(pooled_bulk)) # if I have multiple items with the same value
-
                     z += self.__get_z_bulk(bulk,pooled)
 
 

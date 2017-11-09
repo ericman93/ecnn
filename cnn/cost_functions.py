@@ -45,8 +45,6 @@ class CrossEntropyLogisticRegressionError(BasicErrorFunction):
 
     def derivative(self, real, prediction):
         return real - prediction
-        # t = np.array(real)
-        # return (prediction - t) /   (prediction * (1 - prediction))
 
 
 MeanSquared = MeanSquaredError()

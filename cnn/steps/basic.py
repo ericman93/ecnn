@@ -31,12 +31,6 @@ class StepWithFilters(BasicStep):
         for i in range(len(self.filters)):
             self.filters[i, :] += delta[i]
 
-        error_rates = []
-        # for i in range(len(self.filters)):
-        #     delta
-
-
-
     def forward_propagation(self, inputs):
         self.inputs = inputs
         self.z = self.calc_neurons_values(inputs)

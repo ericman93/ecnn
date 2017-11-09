@@ -19,7 +19,7 @@ class ConvolutionalStep(StepWithFilters):
 
     # ~~~~~
     #TODO: All the convolution functions are doing the same thing.
-    # use only of them and delete the rest
+    # use only one of them and delete the rest
     # ~~~~~
 
     def conv_backprop_features(self, delta, stride):
